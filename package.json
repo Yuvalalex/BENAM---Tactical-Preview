@@ -1,0 +1,52 @@
+{
+  "name": "benam",
+  "version": "1.1.0",
+  "description": "Offline-first tactical medical incident management PWA for combat medic teams — MARCH protocol, real-time triage, QR mesh sync, AI advisor, and Android APK via Capacitor",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite --host",
+    "dev:legacy": "python3 -m http.server 8080",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "playwright test",
+    "test:ci": "playwright test --reporter=github",
+    "lint": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yuvalalex/BENAM_1.2.git"
+  },
+  "keywords": [
+    "pwa",
+    "medical",
+    "tactical",
+    "triage",
+    "offline-first",
+    "combat-medic",
+    "march-protocol",
+    "capacitor",
+    "android",
+    "typescript",
+    "playwright",
+    "rtl",
+    "hebrew"
+  ],
+  "author": "Yuval Alex <yuvalalex@users.noreply.github.com>",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Yuvalalex/BENAM_1.0/issues"
+  },
+  "homepage": "https://github.com/Yuvalalex/BENAM_1.0#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/cli": "^8.2.0",
+    "@capacitor/core": "^8.2.0"
+  }
+}

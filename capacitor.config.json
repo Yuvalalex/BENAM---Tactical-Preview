@@ -1,0 +1,47 @@
+{
+  "appId": "com.benam.app",
+  "appName": "BENAM",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "url": "http://10.0.2.2:3000/?open_in_browser=1",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false,
+    "backgroundColor": "#060908",
+    "overrideUserAgent": "BENAM/1.1 Android"
+  },
+  "plugins": {
+    "Camera": {
+      "promptLabel": "צלם תמונת פציעה"
+    },
+    "Filesystem": {
+      "directory": "Documents"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#7aaa65"
+    },
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DARK",
+      "backgroundColor": "#060908"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "DARK"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#060908",
+      "showSpinner": false,
+      "launchAutoHide": true
+    },
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

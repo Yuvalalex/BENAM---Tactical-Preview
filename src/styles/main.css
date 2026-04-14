@@ -1,0 +1,10 @@
+/* ── BENAM Main Stylesheet — imports domain-split files in order ── */
+/* This file is imported by src/main.js and processed by Vite */
+
+@import './fonts.css';
+@import './variables.css';
+@import './layout.css';
+@import './components.css';
+@import './overlays.css';
+@import './animations.css';
+@import './liquid-glass.css';

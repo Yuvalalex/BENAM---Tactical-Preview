@@ -1,0 +1,12 @@
+node_modules/
+android/.gradle/
+android/app/build/
+android/build/
+www/
+dist/
+.DS_Store
+test-results/
+test-report/
+*.apk
+.last-run.json
+.claude/

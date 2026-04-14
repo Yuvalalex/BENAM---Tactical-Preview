@@ -1,0 +1,57 @@
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+body {
+  filter: none !important;
+  background: #fff !important;
+  color: #000 !important;
+}
+
+#topbar,
+#bottomnav,
+#nae-bar,
+.nv-toggle,
+#pin-lock,
+.btn,
+.fire-btn,
+.wr-view-switcher,
+.wr-actions,
+.wr-tools-strip {
+  display: none !important;
+}
+
+.screen {
+  display: block !important;
+  page-break-inside: avoid;
+}
+
+.screen:not(#sc-report):not(#sc-stats):not(#sc-war) {
+  display: none !important;
+}
+
+#sc-report,
+#sc-stats,
+#sc-war {
+  display: block !important;
+}
+
+.report-box {
+  border: 1px solid #ccc;
+  padding: 8px;
+  font-size: 10pt !important;
+  color: #000 !important;
+}
+
+.card,
+.stat-grid {
+  border: 1px solid #ddd;
+  margin: 4px 0;
+}
+
+* {
+  color: #000 !important;
+  background: transparent !important;
+  border-color: #ccc !important;
+}

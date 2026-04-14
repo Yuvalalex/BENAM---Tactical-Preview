@@ -1,0 +1,902 @@
+/* ══════════════════════════════════════════════════════════════
+   BENAM — LIQUID GLASS TACTICAL DESIGN SYSTEM
+   A modern glassmorphism layer optimized for battlefield use.
+   Designed for: high-contrast, glove-accessible, NVG-compatible.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 1. GLOBAL GLASS FOUNDATION ── */
+
+#app {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(74, 102, 64, .06), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(18, 42, 64, .04), transparent);
+}
+
+/* ── 2. TOPBAR — LIQUID GLASS ── */
+
+#topbar-normal {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.03), 0 4px 20px rgba(0,0,0,.4);
+}
+
+#topbar-fire {
+  background: rgba(10, 0, 0, .85) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 2px solid var(--glass-border-crit) !important;
+  box-shadow: var(--glass-glow-crit);
+}
+
+.tb-name {
+  background: linear-gradient(135deg, var(--olive3), var(--white));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tb-clock {
+  background: rgba(255,255,255,.04);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(232, 176, 32, .15);
+}
+
+.tb-icon-btn {
+  min-width: var(--touch-min-sm);
+  min-height: var(--touch-min-sm);
+  background: var(--glass-bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all var(--dur-normal) var(--ease-glass);
+}
+
+.tb-icon-btn:active {
+  background: var(--glass-bg-elevated) !important;
+  box-shadow: var(--glass-glow);
+  transform: scale(.92);
+}
+
+/* ── 3. BOTTOM NAV — GLASS BAR ── */
+
+#bottomnav {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-top: 1px solid var(--glass-border) !important;
+  box-shadow: 0 -1px 0 rgba(255,255,255,.03), 0 -4px 20px rgba(0,0,0,.3);
+  padding: 2px 0 env(safe-area-inset-bottom, 0);
+}
+
+.nav-btn {
+  min-height: var(--touch-min) !important;
+  min-width: var(--touch-min) !important;
+  border-radius: 12px;
+  margin: 2px;
+  transition: all var(--dur-normal) var(--ease-glass);
+}
+
+.nav-btn.active {
+  background: rgba(122, 170, 101, .1);
+  box-shadow: inset 0 0 20px rgba(122, 170, 101, .06);
+}
+
+.nav-btn:active {
+  transform: scale(.9);
+}
+
+/* ── 4. CASUALTY CARDS — LIQUID GLASS ── */
+
+.cas-card {
+  margin: 0 8px 8px;
+  border-radius: 14px !important;
+  overflow: hidden;
+  border: 1px solid var(--glass-border) !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-glow);
+  transition: all var(--dur-normal) var(--ease-glass);
+}
+
+.cas-card:active {
+  transform: scale(.97);
+  box-shadow: var(--glass-glow), 0 0 20px rgba(122,170,101,.15);
+}
+
+.cas-card.ct1 {
+  border-color: var(--glass-border-crit) !important;
+  background: linear-gradient(135deg, rgba(30, 8, 8, .75), rgba(24, 12, 12, .6)) !important;
+  box-shadow: var(--glass-glow-crit);
+}
+
+.cas-card.ct1::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(240,72,72,.06), transparent 60%);
+  pointer-events: none;
+}
+
+.cas-card.ct2 {
+  border-color: rgba(208, 96, 24, .2) !important;
+  background: linear-gradient(135deg, rgba(28, 20, 0, .7), rgba(20, 16, 8, .6)) !important;
+  box-shadow: 0 0 20px rgba(208, 96, 24, .08), inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.cas-card.ct3 {
+  border-color: rgba(40, 130, 42, .15) !important;
+  background: linear-gradient(135deg, rgba(8, 20, 8, .7), rgba(12, 16, 12, .6)) !important;
+}
+
+.cas-card.ct4 {
+  border-color: rgba(60, 60, 60, .2) !important;
+  background: linear-gradient(135deg, rgba(17, 17, 17, .8), rgba(10, 10, 10, .7)) !important;
+  opacity: .75;
+}
+
+/* Glass shimmer effect on card top */
+.cas-top {
+  position: relative;
+  background: var(--glass-shimmer);
+}
+
+.cas-av {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  font-size: 14px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.cas-bottom {
+  background: rgba(0,0,0,.15);
+  border-top: 1px solid rgba(255,255,255,.04);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ── 5. BUTTONS — GLASS TOUCH TARGETS ── */
+
+.btn {
+  min-height: var(--touch-min) !important;
+  min-width: var(--touch-min) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all var(--dur-normal) var(--ease-glass);
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.btn:active {
+  transform: scale(.94) !important;
+}
+
+.btn-sm {
+  min-height: var(--touch-min-sm) !important;
+  min-width: var(--touch-min-sm) !important;
+  border-radius: 10px !important;
+}
+
+.btn-xs {
+  min-height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 8px !important;
+}
+
+.btn-lg {
+  min-height: 54px !important;
+  border-radius: 14px !important;
+}
+
+.btn-olive {
+  background: linear-gradient(135deg, var(--olive), var(--olive2)) !important;
+  border: 1px solid var(--glass-border-bright) !important;
+  box-shadow: var(--shadow-glow-olive);
+}
+
+.btn-red {
+  background: linear-gradient(135deg, var(--red), var(--red2)) !important;
+  border: 1px solid var(--glass-border-crit) !important;
+  box-shadow: var(--shadow-glow-red);
+}
+
+.btn-ghost {
+  background: var(--glass-bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.btn-ghost:active {
+  background: var(--glass-bg-elevated) !important;
+  box-shadow: var(--glass-glow);
+}
+
+/* ── 6. INPUTS — GLASS FIELDS ── */
+
+.inp {
+  min-height: var(--touch-min) !important;
+  border-radius: 12px !important;
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all var(--dur-normal) var(--ease-glass);
+}
+
+.inp:focus {
+  border-color: var(--glass-border-bright) !important;
+  box-shadow: var(--glass-glow), 0 0 0 3px rgba(122, 170, 101, .08);
+}
+
+/* ── 7. MODALS — LIQUID GLASS ── */
+
+#overlay.on {
+  background: rgba(0, 0, 0, .65) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+#modal {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: var(--glass-blur-heavy) !important;
+  -webkit-backdrop-filter: var(--glass-blur-heavy) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 20px 20px 0 0 !important;
+  box-shadow: 0 -8px 40px rgba(0,0,0,.5), var(--glass-glow);
+}
+
+.modal-hdr {
+  background: var(--glass-shimmer) !important;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+
+/* ── 8. TOAST — GLASS NOTIFICATION ── */
+
+.toast {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: var(--glass-blur-heavy) !important;
+  -webkit-backdrop-filter: var(--glass-blur-heavy) !important;
+  border: 1px solid var(--glass-border-bright) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5), var(--glass-glow);
+}
+
+/* ── 9. CASUALTY DRAWER — GLASS PANEL ── */
+
+#cas-drawer {
+  background: var(--bg) !important;
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: 8px 0 40px rgba(0,0,0,.5);
+}
+
+/* ── 10. WAR ROOM SITUATION HEADER ── */
+
+.wr-sit-header {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.wr-sit-chip {
+  background: var(--glass-bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── 11. GOLDEN HOUR CHIPS — GLASS ── */
+
+.gh-chip {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.gh-chip.gh-ok {
+  background: rgba(40, 130, 42, .12) !important;
+  border-color: rgba(66, 192, 66, .2) !important;
+  box-shadow: 0 0 15px rgba(66, 192, 66, .06);
+}
+
+.gh-chip.gh-warn {
+  background: rgba(200, 144, 16, .12) !important;
+  border-color: rgba(255, 208, 80, .2) !important;
+  box-shadow: 0 0 15px rgba(255, 208, 80, .06);
+}
+
+.gh-chip.gh-crit {
+  background: rgba(200, 40, 40, .15) !important;
+  border-color: rgba(240, 72, 72, .25) !important;
+  box-shadow: 0 0 20px rgba(240, 72, 72, .1);
+}
+
+/* ── 12. TQ TIMER — GLASS BADGES ── */
+
+.tq {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 8px;
+  padding: 3px 10px;
+  font-weight: 900;
+}
+
+.tq-ok {
+  background: rgba(40, 130, 42, .15) !important;
+  border: 1px solid rgba(66, 192, 66, .2);
+  color: var(--green3);
+}
+
+.tq-warn {
+  background: rgba(200, 144, 16, .15) !important;
+  border: 1px solid rgba(255, 208, 80, .25);
+  color: var(--amber3);
+  box-shadow: 0 0 15px rgba(255, 208, 80, .08);
+}
+
+.tq-crit {
+  background: rgba(200, 40, 40, .2) !important;
+  border: 1px solid rgba(240, 72, 72, .3);
+  color: var(--red3);
+  box-shadow: 0 0 20px rgba(240, 72, 72, .12);
+  animation: glassPulse 2s ease-in-out infinite;
+}
+
+@keyframes glassPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(240, 72, 72, .12);
+    border-color: rgba(240, 72, 72, .3);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(240, 72, 72, .25);
+    border-color: rgba(240, 72, 72, .5);
+  }
+}
+
+/* ── 13. PRIORITY TAGS — GLASS ── */
+
+.prio {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 6px;
+  min-width: 32px;
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pt1 {
+  background: rgba(200, 40, 40, .2) !important;
+  border: 1px solid rgba(240, 72, 72, .3) !important;
+  color: var(--red3) !important;
+  box-shadow: 0 0 10px rgba(240, 72, 72, .1);
+}
+
+.pt2 {
+  background: rgba(208, 96, 24, .15) !important;
+  border: 1px solid rgba(208, 96, 24, .25) !important;
+  color: var(--orange2) !important;
+}
+
+.pt3 {
+  background: rgba(40, 130, 42, .12) !important;
+  border: 1px solid rgba(66, 192, 66, .2) !important;
+  color: var(--green3) !important;
+}
+
+.pt4 {
+  background: rgba(60, 60, 60, .15) !important;
+  border: 1px solid rgba(100, 100, 100, .2) !important;
+  color: #888 !important;
+}
+
+/* ── 14. TRIAGE BOARD — GLASS COLUMNS ── */
+
+.board-col {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-glow);
+}
+
+/* ── 15. ROLE SELECTION — GLASS BUTTONS ── */
+
+.role-btn {
+  min-height: var(--touch-min) !important;
+  border-radius: 14px !important;
+  background: var(--glass-bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all var(--dur-normal) var(--ease-glass);
+}
+
+.role-btn:active,
+.role-btn.selected {
+  border-color: var(--glass-border-bright) !important;
+  box-shadow: var(--glass-glow);
+  background: rgba(122, 170, 101, .1) !important;
+}
+
+/* ── 16. VITALS GRID — GLASS DATA CELLS ── */
+
+.vbox {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all var(--dur-normal);
+}
+
+.vbox.crit,
+.d-vitem.crit {
+  border-color: var(--glass-border-crit) !important;
+  box-shadow: var(--glass-glow-crit);
+}
+
+/* ── 17. PREP BRAND — GLASS CARD ── */
+
+.prep-brand-card {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-glow), 0 10px 30px rgba(0,0,0,.28);
+}
+
+.prep-brand-mark {
+  background: linear-gradient(145deg, var(--olive3), var(--olive)) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,.35), 0 0 25px rgba(122, 170, 101, .15);
+}
+
+/* ── 18. FILTER STRIP — GLASS CHIPS ── */
+
+.wr-filter-chip {
+  min-height: 36px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: var(--glass-bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  transition: all var(--dur-normal) var(--ease-glass);
+}
+
+.wr-filter-chip.active {
+  background: rgba(122, 170, 101, .15) !important;
+  border-color: var(--glass-border-bright) !important;
+  box-shadow: var(--glass-glow);
+}
+
+/* ── 19. MARCH PROTOCOL — GLASS SECTIONS ── */
+
+.march-phase {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.march-hdr {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  min-height: var(--touch-min);
+}
+
+.march-item {
+  min-height: var(--touch-min-sm);
+  border-radius: 10px;
+  transition: all var(--dur-fast);
+}
+
+.march-item:active {
+  background: rgba(122, 170, 101, .08);
+}
+
+.march-item.done {
+  background: rgba(122, 170, 101, .06);
+}
+
+/* ── 20. MEDICATION TABLE — GLASS ── */
+
+.med-table {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+
+.med-table th {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.med-table td {
+  background: var(--glass-bg) !important;
+}
+
+/* ── 21. FAB — GLASS FLOATING ACTION ── */
+
+#quick-fab {
+  min-width: 56px;
+  min-height: 56px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.5), 0 0 25px rgba(200, 40, 40, .2);
+  border: 1px solid rgba(240, 72, 72, .2) !important;
+}
+
+#quick-actions-menu {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: var(--glass-blur-heavy) !important;
+  -webkit-backdrop-filter: var(--glass-blur-heavy) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,.5), var(--glass-glow);
+}
+
+.qa-item {
+  min-height: var(--touch-min) !important;
+  border-radius: 12px;
+  transition: all var(--dur-fast);
+}
+
+.qa-item:active {
+  background: rgba(122, 170, 101, .08);
+}
+
+/* ── 22. EVAC BADGE — GLASS ── */
+
+.evac-badge {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 8px;
+}
+
+/* ── 23. TIMELINE — GLASS ITEMS ── */
+
+.tl-item {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ── 24. TOPBAR DROPDOWN — GLASS MENU ── */
+
+#tb-menu {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: var(--glass-blur-heavy) !important;
+  -webkit-backdrop-filter: var(--glass-blur-heavy) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,.6), var(--glass-glow);
+}
+
+.tb-menu-item {
+  min-height: var(--touch-min-sm) !important;
+  border-radius: 10px !important;
+  transition: all var(--dur-fast);
+}
+
+.tb-menu-item:active {
+  background: rgba(122, 170, 101, .08) !important;
+}
+
+/* ── 25. PIN LOCK — GLASS KEYPAD ── */
+
+.pin-key {
+  min-width: var(--touch-min) !important;
+  min-height: var(--touch-min) !important;
+  border-radius: 14px !important;
+  background: var(--glass-bg-surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all var(--dur-fast);
+}
+
+.pin-key:active {
+  background: rgba(122, 170, 101, .15) !important;
+  border-color: var(--glass-border-bright) !important;
+  transform: scale(.92);
+}
+
+/* ── 26. DECISION BOX — GLASS AI ── */
+
+.decision-box {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 12px 14px;
+}
+
+.db-t1 {
+  border-color: var(--glass-border-crit) !important;
+  box-shadow: var(--glass-glow-crit);
+}
+
+/* ── 27. CARD SECTIONS — GLASS ── */
+
+.sec {
+  background: var(--glass-bg-surface) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px !important;
+  min-height: var(--touch-min-sm);
+}
+
+.card {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ── 28. SWIPE OVERLAY — GLASS ── */
+
+#swipe-overlay {
+  background: var(--bg) !important;
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+}
+
+/* ── 29. FIRE BUTTONS — TACTILE GLASS ── */
+
+.fire-btn {
+  min-height: 64px !important;
+  min-width: 64px !important;
+  border-radius: 16px !important;
+  background: var(--glass-bg-elevated) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all var(--dur-normal) var(--ease-glass);
+}
+
+.fire-btn:active {
+  transform: scale(.9) !important;
+  box-shadow: var(--glass-glow);
+}
+
+/* ── 30. ALLERGY BLOCK — CRITICAL GLASS ── */
+
+#allergy-block {
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+}
+
+/* ── 31. TACTICAL ANIMATIONS ── */
+
+@keyframes glassReveal {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+    transform: translateY(10px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: var(--glass-blur);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes glassBorderGlow {
+  0%, 100% {
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-glow);
+  }
+  50% {
+    border-color: var(--glass-border-bright);
+    box-shadow: var(--glass-glow), 0 0 20px rgba(122, 170, 101, .1);
+  }
+}
+
+@keyframes criticalScanline {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+
+/* T1 critical cards get a subtle scanline effect */
+.cas-card.ct1::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(240, 72, 72, .015) 3px,
+    rgba(240, 72, 72, .015) 4px
+  );
+  border-radius: inherit;
+}
+
+/* New card entry with glass reveal */
+.cas-card-enter {
+  animation: glassReveal .4s var(--ease-glass) both !important;
+}
+
+.cas-card-new {
+  animation: glassReveal .4s var(--ease-glass) both, glassBorderGlow 2s ease-in-out 1 !important;
+}
+
+/* ── 32. SCROLLBAR — GLASS ── */
+
+#content::-webkit-scrollbar {
+  width: 3px;
+}
+
+#content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#content::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 2px;
+}
+
+/* ── 33. TRAINING BAR — GLASS ── */
+
+#training-bar.on {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(160, 128, 255, .15);
+}
+
+/* ── 34. CHECKBOX — GLASS ── */
+
+.checkbox-box {
+  min-width: 28px !important;
+  min-height: 28px !important;
+  border-radius: 8px !important;
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  transition: all var(--dur-fast);
+}
+
+.checkbox-box.checked {
+  background: rgba(122, 170, 101, .2) !important;
+  border-color: var(--glass-border-bright) !important;
+}
+
+/* ── 35. GLOBAL TOUCH SAFETY ── */
+
+button, [onclick], [role="button"], a, select {
+  min-height: 36px;
+  cursor: pointer;
+}
+
+/* Ensure all interactive elements have adequate tap targets */
+select.inp {
+  min-height: var(--touch-min) !important;
+}
+
+/* ── 36. PREP SCREEN GROUPS ── */
+
+.prep-grp {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── 37. BODY MAP ENHANCEMENT ── */
+
+svg[viewBox="0 0 110 230"] {
+  filter: drop-shadow(0 0 8px rgba(122, 170, 101, .1));
+}
+
+/* ── 38. EVAC PIPELINE — GLASS STAGES ── */
+
+.evac-slot {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  min-height: var(--touch-min);
+}
+
+.evac-slot.filled {
+  border-color: var(--glass-border-bright) !important;
+  box-shadow: var(--glass-glow);
+}
+
+.evac-slot.filled-t1 {
+  border-color: var(--glass-border-crit) !important;
+  box-shadow: var(--glass-glow-crit);
+}
+
+/* ── 39. QR OVERLAY — GLASS ── */
+
+#qr-export-overlay,
+#qr-scan-overlay {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+}
+
+/* ── 40. INCIDENT BAR — GLASS TABS ── */
+
+#incident-bar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── 41. PERFORMANCE METRICS ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .cas-card, .btn, .inp, #topbar-normal, #bottomnav, #modal, .toast {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ── 42. WAR ROOM MATRIX TABLE — GLASS ── */
+
+.wr-matrix-table {
+  border-collapse: separate !important;
+  border-spacing: 0;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+
+.wr-matrix-table th {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.wr-matrix-table td {
+  background: var(--glass-bg) !important;
+  border-color: var(--glass-border) !important;
+}
+
+/* ── 43. MEDIC LOAD CARDS — GLASS ── */
+
+#medic-board > div {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── 44. BODY MAP SVG — THEME-AWARE ── */
+
+.bm-part {
+  fill: var(--s3);
+  stroke: var(--olive);
+  stroke-width: 2;
+}
+.bm-part.bm-back {
+  fill: var(--s2);
+  stroke: var(--olive);
+}
+.bm-text {
+  fill: var(--muted);
+}
+.bm-spine {
+  stroke: var(--b1);
+}

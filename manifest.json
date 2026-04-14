@@ -1,0 +1,17 @@
+{
+  "name": "BENAM — Battlefield Emergency Network & Aid Manager",
+  "short_name": "BENAM",
+  "description": "ניהול אירוע רפואי טקטי — offline מלא",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060908",
+  "theme_color": "#060908",
+  "lang": "he",
+  "dir": "rtl",
+  "categories": ["medical", "utilities"],
+  "icons": [
+    { "src": "icons/png/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/png/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

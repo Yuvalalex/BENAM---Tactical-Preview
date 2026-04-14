@@ -1,0 +1,188 @@
+/* ── BENAM Design Tokens & Base Resets ── */
+
+:root {
+  /* ── Colors ── */
+  --bg: #060908;
+  --s1: #0c1110;
+  --s2: #131a14;
+  --s3: #1a2318;
+  --b0: #1e2a1c;
+  --b1: #2a3826;
+  --b2: #364830;
+  --olive: #4a6640;
+  --olive2: #5e8250;
+  --olive3: #7aaa65;
+  --amber: #c89010;
+  --amber2: #e8b020;
+  --amber3: #ffd050;
+  --red: #a81818;
+  --red2: #c82828;
+  --red3: #f04848;
+  --orange: #b04808;
+  --orange2: #d06018;
+  --green: #186018;
+  --green2: #28822a;
+  --green3: #42c042;
+  --blue: #182840;
+  --blue2: #284888;
+  --white: #cce0cc;
+  --muted: #506050;
+  --muted2: #88a085;
+  --crit-bg: #1e0808;
+  --urg-bg: #1c1400;
+  --min-bg: #081408;
+  --fire-bg: #0a0000;
+  /* ── Typography ── */
+  --font-mono: 'Share Tech Mono', monospace;
+  --font: 'Heebo', sans-serif;
+  --font-heb: 'Heebo', sans-serif;
+  --fs-display: 32px;
+  --fs-headline: 22px;
+  --fs-title: 17px;
+  --fs-body: 14px;
+  --fs-label: 11px;
+  --fs-caption: 9px;
+  /* ── Spacing ── */
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 12px;
+  --sp-lg: 16px;
+  --sp-xl: 24px;
+  --sp-2xl: 32px;
+  /* ── Radius ── */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-full: 50%;
+  /* ── Shadows ── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, .3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, .4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, .6);
+  --shadow-glow-red: 0 4px 20px rgba(200, 40, 40, .4);
+  --shadow-glow-olive: 0 4px 20px rgba(122, 170, 101, .25);
+  --shadow-glow-amber: 0 4px 20px rgba(200, 144, 16, .3);
+  /* ── Liquid Glass Tokens ── */
+  --glass-bg: rgba(12, 17, 16, .72);
+  --glass-bg-elevated: rgba(19, 26, 20, .78);
+  --glass-bg-surface: rgba(26, 35, 24, .65);
+  --glass-border: rgba(122, 170, 101, .12);
+  --glass-border-bright: rgba(122, 170, 101, .22);
+  --glass-border-crit: rgba(240, 72, 72, .25);
+  --glass-blur: blur(20px);
+  --glass-blur-heavy: blur(32px);
+  --glass-shimmer: linear-gradient(135deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 50%, rgba(255,255,255,.06) 100%);
+  --glass-glow: 0 0 30px rgba(122, 170, 101, .08), inset 0 1px 0 rgba(255,255,255,.05);
+  --glass-glow-crit: 0 0 30px rgba(240, 72, 72, .12), inset 0 1px 0 rgba(255,255,255,.05);
+  /* ── Touch Target Minimums ── */
+  --touch-min: 48px;
+  --touch-min-sm: 44px;
+  /* ── Transitions ── */
+  --ease-out: cubic-bezier(.4, 0, .2, 1);
+  --ease-spring: cubic-bezier(.175, .885, .32, 1.275);
+  --ease-glass: cubic-bezier(.22, .68, .0, 1.0);
+  --dur-fast: .15s;
+  --dur-normal: .25s;
+  --dur-slow: .35s;
+  --dur-glass: .4s;
+}
+
+/* ── Night Vision Mode ── */
+.night-vision {
+  --bg: #000800;
+  --s1: #001200;
+  --s2: #001a00;
+  --s3: #002200;
+  --b0: #003300;
+  --b1: #004400;
+  --b2: #005500;
+  --olive: #006600;
+  --olive2: #008800;
+  --olive3: #00cc00;
+  --white: #00ff00;
+  --muted: #006600;
+  --muted2: #009900;
+  --amber: #009900;
+  --amber2: #00bb00;
+  --amber3: #00ff00;
+  --red: #004400;
+  --red2: #007700;
+  --red3: #00ff00;
+  --orange: #005500;
+  --orange2: #008800;
+  --green: #003300;
+  --green2: #006600;
+  --green3: #00ff00;
+  --crit-bg: #001a00;
+  --urg-bg: #001200;
+  --min-bg: #000a00;
+  --fire-bg: #000800;
+  --glass-bg: rgba(0, 12, 0, .85);
+  --glass-bg-elevated: rgba(0, 18, 0, .88);
+  --glass-bg-surface: rgba(0, 24, 0, .7);
+  --glass-border: rgba(0, 204, 0, .15);
+  --glass-border-bright: rgba(0, 255, 0, .25);
+  --glass-border-crit: rgba(0, 255, 0, .35);
+  --glass-glow: 0 0 30px rgba(0, 204, 0, .1), inset 0 1px 0 rgba(0, 255, 0, .08);
+  --glass-glow-crit: 0 0 30px rgba(0, 255, 0, .15), inset 0 1px 0 rgba(0, 255, 0, .08);
+}
+
+/* NVG body background */
+.night-vision {
+  background: #000a00 !important;
+}
+
+/* Scanline overlay for authentic NVG phosphor look */
+.night-vision #app::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99998;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, .12) 2px,
+    rgba(0, 0, 0, .12) 4px
+  );
+  mix-blend-mode: multiply;
+}
+
+/* NVG legibility boosts */
+.night-vision .cas-name,
+.night-vision .tb-name,
+.night-vision .tq,
+.night-vision .prio,
+.night-vision .score-val {
+  filter: brightness(1.4) contrast(1.1);
+}
+
+/* Catch remaining hardcoded inline colors */
+.night-vision [style*="color:#f"],
+.night-vision [style*="color:#c"],
+.night-vision [style*="color:#a"],
+.night-vision [style*="color:white"],
+.night-vision [style*="color: white"] {
+  color: #00ff00 !important;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--white);
+  font-size: 14px;
+}
+

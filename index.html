@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; media-src 'self' blob:;">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BENAM">
+  <meta name="theme-color" content="#060908">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.svg">
+  <title>BENAM</title>
+  <style id="night-vision-css">
+    /* ═══ Injury Popup — Supreme V3 ═══ */
+    .inj-popup {
+      position: fixed;
+      background: rgba(12,18,14,0.97);
+      border: 1px solid rgba(122,170,101,0.25);
+      border-radius: 14px;
+      padding: 14px;
+      z-index: 999999;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.9), 0 0 20px rgba(122,170,101,0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      min-width: 220px;
+      max-width: 260px;
+    }
+    .inj-popup .btn { min-height: 36px; font-size: 12px; }
+  </style>
+  <script>
+    // PWA: register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => { });
+    }
+    // Restore NVG mode from last session
+    if (localStorage.getItem('benam_nv') === '1') {
+      document.body.classList.add('night-vision');
+    }
+  </script>
+</head>
+
+<body>
+
+  <!-- ════ PIN LOCK SCREEN ════ -->
+  <div id="pin-lock"
+    style="position:fixed;inset:0;z-index:99999;background:#060908;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;display:none">
+    <div style="font-size:28px;font-weight:900;color:var(--olive3);letter-spacing:.1em">🔒 BENAM</div>
+    <div style="font-size:11px;color:var(--muted)">הזן קוד PIN</div>
+    <div id="pin-dots" style="display:flex;gap:10px;margin:8px 0">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:240px;width:100%">
+      <button class="pin-key" onclick="pinInput(1)">1</button>
+      <button class="pin-key" onclick="pinInput(2)">2</button>
+      <button class="pin-key" onclick="pinInput(3)">3</button>
+      <button class="pin-key" onclick="pinInput(4)">4</button>
+      <button class="pin-key" onclick="pinInput(5)">5</button>
+      <button class="pin-key" onclick="pinInput(6)">6</button>
+      <button class="pin-key" onclick="pinInput(7)">7</button>
+      <button class="pin-key" onclick="pinInput(8)">8</button>
+      <button class="pin-key" onclick="pinInput(9)">9</button>
+      <button class="pin-key" onclick="pinClear()" style="font-size:14px">⌫</button>
+      <button class="pin-key" onclick="pinInput(0)">0</button>
+      <button class="pin-key" onclick="pinSkip()" style="font-size:10px;color:var(--muted)">דלג</button>
+    </div>
+    <div id="pin-error" style="font-size:10px;color:var(--red3);min-height:16px"></div>
+    <button onclick="pinSetup()"
+      style="background:none;border:none;color:var(--olive3);font-size:10px;margin-top:8px;cursor:pointer;font-family:var(--font)">⚙
+      הגדר PIN חדש</button>
+  </div>
+
+  <div id="app">
+
+    <!-- ════ TOPBAR ════ -->
+    <div id="topbar">
+      <!-- Multi-incident tabs -->
+      <div id="incident-bar"></div>
+      <div id="topbar-normal">
+        <div style="flex-shrink:0;display:flex;align-items:center;gap:6px">
+          <button class="tb-icon-btn" onclick="event.stopPropagation();toggleTopbarMenu()" title="More">⋯</button>
+        </div>
+        <div class="tb-clock" id="clock">00:00:00</div>
+        <div id="evac-badge" class="evac-badge" style="display:none" onclick="openEvacQueue()">
+          <span id="evac-badge-text"></span>
+          <span id="evac-badge-timer" style="font-size:8px;font-family:var(--font-mono);margin-right:4px"></span>
+        </div>
+        <div id="rec-indicator"
+          style="display:none;font-size:9px;padding:2px 5px;background:rgba(200,20,20,.25);border:1px solid var(--red2);border-radius:4px;color:var(--red3);font-weight:700;animation:pulse 2s ease-in-out infinite;white-space:nowrap">
+          ● REC</div>
+        <!-- Readiness / smart checklist badge -->
+        <div id="tb-readiness-badge" onclick="openSmartChecklist()" class="btn btn-sm btn-ghost"
+          style="display:none;font-size:11px;padding:0 8px;min-height:28px;border-color:var(--olive3);color:var(--olive3);border-radius:4px;white-space:nowrap;font-weight:700">
+          📋 <span id="tb-readiness-val"></span>
+        </div>
+        <!-- Topbar dropdown menu -->
+        <div id="tb-menu"
+          style="display:none;position:absolute;top:52px;right:8px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:6px;z-index:100;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.6)">
+          <div class="tb-menu-item" onclick="closeTopbarMenu();openSyncDashboard()" style="background:var(--s3); border-bottom:1px solid var(--b0); font-weight:900; color:var(--white)">📡 מרכז סנכרון (Sync)</div>
+          <div class="tb-menu-item" onclick="closeTopbarMenu();openOperationsList()">📁 מבצעים</div>
+          <div class="tb-menu-item" onclick="closeTopbarMenu();openTacticalMap()">🗺️ מפה</div>
+          <div class="tb-menu-item tb-war-only" onclick="closeTopbarMenu();openStatusReport()" style="display:none">📊
+            דוח מצב</div>
+          <!-- דו"ח menu item removed -->
+          <!-- night vision menu item removed -->
+          <div class="tb-menu-item" onclick="closeTopbarMenu();openMedicAllocView()">👨‍⚕️ Medics</div>
+          <div class="tb-menu-item" onclick="closeTopbarMenu();toggleRecording()">🔴 הקלטה</div>
+          <!-- מסך מלא removed -->
+          <div class="tb-menu-item" onclick="closeTopbarMenu();openUserSettings()">⚙️ הגדרות</div>
+        </div>
+        <button class="btn btn-sm btn-ghost" id="medics-topbar-btn" onclick="openMedicAllocView()"
+          style="display:flex;padding:0 8px;min-height:28px;border-color:var(--olive2);color:var(--olive3);margin-right:6px">👨‍⚕️</button>
+        <button class="btn btn-sm btn-ghost" id="fire-toggle-btn" onclick="toggleFireMode()"
+          style="display:none;padding:0 8px;min-height:28px;border-color:var(--red2);color:var(--red3)">🔥</button>
+      </div>
+      <div id="topbar-fire">
+        <div class="fire-title">🔥 FIRE MODE</div>
+        <div class="fire-badge">אר"ן פעיל</div>
+        <button class="btn btn-sm btn-ghost" onclick="toggleFireMode()"
+          style="margin-right:auto;font-size:11px;border-color:var(--muted);color:var(--muted);padding:0 8px;min-height:28px">רגיל</button>
+      </div>
+      <!-- SA Pulse — now handled by floating badge #sa-pulse only -->
+    </div>
+
+    <!-- ════ CONTENT ════ -->
+    <main id="content" role="main">
+
+      <!-- ══ ROLE / MODE PICKER ══ -->
+      <div id="sc-role" class="screen">
+        <div
+          style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:28px 20px;gap:20px">
+          <div style="text-align:center;margin-bottom:4px">
+            <div style="font-size:26px;font-weight:900;color:var(--white);letter-spacing:.06em">BENAM 1.0</div>
+            <div style="font-size:11px;color:var(--muted2);margin-top:4px">Battlefield Emergency Network &amp; Aid
+              Manager</div>
+          </div>
+
+          <!-- מצב -->
+          <div style="width:100%;max-width:360px">
+            <div
+              style="font-size:10px;color:var(--olive3);font-weight:700;margin-bottom:8px;letter-spacing:.12em;text-transform:uppercase">
+              מצב שימוש</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button id="mode-op-btn" class="role-btn" data-mode="operational" onclick="selectMode('operational')">⚔️
+                מבצעי</button>
+              <button id="mode-tr-btn" class="role-btn" data-mode="training" onclick="selectMode('training')">🎓
+                אימון</button>
+            </div>
+          </div>
+
+          <!-- תפקיד -->
+          <div style="width:100%;max-width:360px">
+            <div
+              style="font-size:10px;color:var(--olive3);font-weight:700;margin-bottom:8px;letter-spacing:.12em;text-transform:uppercase">
+              תפקיד</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button class="role-btn" data-role="commander" onclick="selectRole('commander')">🎖 מפקד ארן</button>
+              <button class="role-btn" data-role="medic" onclick="selectRole('medic')">🩹 חובש</button>
+              <button class="role-btn" data-role="doc" onclick="selectRole('doc')">🏥 לורם / רופא</button>
+              <button class="role-btn" data-role="paramedic" onclick="selectRole('paramedic')">🚑 פראמדיק</button>
+            </div>
+          </div>
+
+          <!-- סוג משימה -->
+          <div style="width:100%;max-width:360px">
+            <div
+              style="font-size:10px;color:var(--olive3);font-weight:700;margin-bottom:8px;letter-spacing:.12em;text-transform:uppercase">
+              סוג משימה</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button class="role-btn" data-mission="open" onclick="selectMission('open')">🌄 ארן פתוח</button>
+              <button class="role-btn" data-mission="urban" onclick="selectMission('urban')">🏙 ארן עירוני</button>
+              <button class="role-btn" data-mission="ruins" onclick="selectMission('ruins')">🏚 חורבות / PFC</button>
+              <button class="role-btn" data-mission="lms" onclick="selectMission('lms')">🌑 LMS / ארב</button>
+              <button class="role-btn" data-mission="base" onclick="selectMission('base')" style="grid-column:span 2">🏕
+                כוננות בסיס</button>
+            </div>
+          </div>
+
+          <button id="role-continue-btn" class="btn btn-lg btn-olive btn-full"
+            style="max-width:360px;opacity:.4;pointer-events:none;margin-top:4px" onclick="confirmRoleSetup()">המשך
+            →</button>
+          <button class="btn btn-sm btn-ghost" onclick="skipRoleSetup()">דלג — הצג הכל</button>
+        </div>
+      </div>
+
+      <!-- ══ 0: PREP — Sub-tabbed flow ══ -->
+      <div class="screen active" id="sc-prep">
+
+        <!-- branding card removed -->
+
+        <!-- Mission Readiness Dashboard (moved here from below) -->
+        <div style="margin:0 10px 8px;display:flex;justify-content:flex-end">
+          <button class="btn btn-sm btn-olive" onclick="openOperationsList()" style="padding:6px 10px;">📁 מבצעים</button>
+        </div>
+        <div class="prep-grp prep-grp-comms prep-grp-force prep-grp-evac" id="readiness-top" style="margin:0 10px 6px">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">✅</span>
+            <span style="font-size:12px;font-weight:700;flex:1">בד"ח מוכנות ליציאה</span>
+            <span id="readiness-score" style="font-size:12px;font-weight:900;color:var(--olive3)"></span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▾</span>
+          </div>
+          <div
+            style="display:block;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:8px">
+            <div id="readiness-checklist" style="display:flex;flex-direction:column;gap:3px"></div>
+          </div>
+        </div>
+
+        <button class="btn btn-lg btn-olive btn-full" id="mce-activate-btn" onclick="startMission()"
+          style="display:none;gap:4px">
+          <span data-t="start_mission">התחל משימה</span> ⚔️
+        </button>
+        <button class="btn btn-lg btn-red btn-full" id="mce-stop-btn" onclick="stopMission()"
+          style="display:none;gap:4px">
+          <span data-t="end_mission">סיים אר"ן</span> 🛑
+        </button>
+
+        <!-- Training mode start -->
+        <div style="padding:6px 10px 6px;display:none" data-mode="training">
+          <div
+            style="background:linear-gradient(135deg,rgba(42,16,96,.25),rgba(64,16,144,.15));border:1px solid #6040d0;border-radius:10px;padding:12px;text-align:center">
+            <button class="btn btn-lg btn-full" onclick="startMission()"
+              style="font-size:16px;border-radius:8px;background:#4020a0;border:2px solid #6040d0;color:#d0a0ff">🎓 התחל
+              אימון</button>
+            <div style="font-size:9px;color:#8060c0;margin-top:4px">נתונים נשמרים בנפרד</div>
+          </div>
+        </div>
+
+        <!-- SUB-TAB NAV for prep -->
+        <div class="sub-tabs" id="prep-sub-tabs">
+          <button class="sub-tab active" onclick="setPrepTab('comms')">📡 קשר</button>
+          <button class="sub-tab" onclick="setPrepTab('force')">👥 כוח</button>
+          <button class="sub-tab" onclick="setPrepTab('evac')">🚁 פינוי</button>
+        </div>
+
+        <!-- Quick pre-mission checklist -->
+        <div class="prep-grp prep-grp-comms" style="padding:4px 10px 6px">
+          <button class="btn btn-sm btn-ghost btn-full" onclick="openPreMissionBrief()"
+            style="border-color:var(--olive3);color:var(--olive3);border-radius:6px;font-size:11px">📋 תדריך
+            טרום-משימה</button>
+        </div>
+
+        <!-- STEP 3: Comms — collapsible -->
+        <div class="prep-grp prep-grp-comms" style="margin:0 10px 6px">
+          <div
+            onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.prep-arrow').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px 8px 0 0;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">📻</span>
+            <span style="font-size:12px;font-weight:700;flex:1">תדרים ו-LZ</span>
+            <span class="prep-arrow" style="font-size:12px;color:var(--muted)">▾</span>
+          </div>
+          <div
+            style="display:block;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:10px 12px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;gap:6px;align-items:center">
+                <span style="font-size:16px;line-height:1;min-width:20px;text-align:center">🪖</span>
+                <input class="inp" id="p-unit" placeholder="יחידה" style="flex:2;padding-left:6px">
+                <span style="font-size:16px;line-height:1;min-width:20px;text-align:center">📻</span>
+                <input class="inp" id="p-mahup" placeholder="MAHUP" style="flex:1;padding-left:6px">
+              </div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <span style="font-size:16px;line-height:1;min-width:20px;text-align:center">🚁</span>
+                <input class="inp" id="p-helo" placeholder="HELO תדר פינוי" style="flex:1;padding-left:6px">
+              </div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <span style="font-size:16px;line-height:1;min-width:20px;text-align:center">🛬</span>
+                <input class="inp" id="p-lz1" placeholder="LZ1" style="flex:1;padding-left:6px">
+                <span style="font-size:16px;line-height:1;min-width:20px;text-align:center">🛬</span>
+                <input class="inp" id="p-lz2" placeholder="LZ2" style="flex:1;padding-left:6px">
+              </div>
+              <div id="helipads-list"></div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm btn-ghost" style="flex:1;font-size:10px" onclick="addHelipad()">＋
+                  Helipad</button>
+              </div>
+              <button class="btn btn-sm btn-olive btn-full" onclick="saveCommsExtended()">💾 שמור</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Force roster — enhanced with iron numbers -->
+        <div class="prep-grp prep-grp-force" style="margin:0 10px 6px">
+          <div
+            onclick="var el=document.getElementById('prep-roster-body');el.style.display=el.style.display==='none'?'block':'none';this.querySelector('.prep-arrow').textContent=el.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px 8px 0 0;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">👥</span>
+            <span style="font-size:12px;font-weight:700;flex:1">רוסטר כוח <span id="force-count"
+                style="color:var(--amber2);font-size:11px"></span></span>
+            <span class="prep-arrow" style="font-size:12px;color:var(--muted)">▾</span>
+          </div>
+          <div id="prep-roster-body"
+            style="background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:8px">
+            <div style="display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;align-items:center">
+              <button class="btn btn-xs btn-ghost" onclick="setForceView('cards')"
+                style="font-size:9px;padding:2px 6px;min-height:20px">📋 Cards</button>
+              <button class="btn btn-xs btn-ghost" onclick="setForceView('table')"
+                style="font-size:9px;padding:2px 6px;min-height:20px">📊 Table</button>
+              <span style="flex:1"></span>
+              <select class="inp" onchange="setForceSort(this.value)"
+                style="font-size:9px;padding:2px 4px;width:70px;min-height:20px">
+                <option value="name">Sort: Name</option>
+                <option value="role">Sort: Role</option>
+                <option value="blood">Sort: Blood</option>
+              </select>
+              <select class="inp" onchange="setForceFilter(this.value)"
+                style="font-size:9px;padding:2px 4px;width:70px;min-height:20px">
+                <option value="">All Roles</option>
+                <option value="חובש">חובש</option>
+                <option value="לוחם">לוחם</option>
+                <option value="מפקד">מפקד</option>
+                <option value="רופא">רופא</option>
+                <option value="פאראמדיק">פאראמדיק</option>
+              </select>
+            </div>
+            <div id="force-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-md btn-olive" style="flex:2;border-radius:6px" onclick="openAddForce()">＋ הוסף
+                לוחם</button>
+              <button class="btn btn-md btn-ghost"
+                style="flex:1;border-radius:6px;border-color:var(--red2);color:var(--red3);font-size:10px"
+                onclick="clearAllForce()">🗑 מחק כוח</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Evacuation Order — who evacuates whom -->
+        <div class="prep-grp prep-grp-evac" style="margin:0 10px 6px">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">🚁</span>
+            <span style="font-size:12px;font-weight:700;flex:1">סדר פינוי + כוח מפנה</span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▾</span>
+          </div>
+          <div
+            style="display:block;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:8px">
+            <div id="evac-order-list" style="display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:11px;color:var(--muted);padding:4px 0">הוסף פגועים ← ייוצר סדר פינוי אוטומטי</div>
+            </div>
+            <div style="margin-top:6px;font-size:10px;color:var(--olive3);font-weight:700">כוח מפנה:</div>
+            <div id="evac-force-assign" style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+              <div style="display:flex;gap:6px;align-items:center">
+                <span style="font-size:16px;line-height:1;min-width:20px;text-align:center">🚗</span>
+                <input class="inp" id="evac-driver" placeholder="נהג/פטריה" style="flex:1;font-size:11px;padding-left:6px">
+                <span style="font-size:16px;line-height:1;min-width:20px;text-align:center">🚑</span>
+                <input class="inp" id="evac-vehicle" placeholder="כלי רכב" style="flex:1;font-size:11px;padding-left:6px">
+              </div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <span style="font-size:16px;line-height:1;min-width:20px;text-align:center">🩺</span>
+                <input class="inp" id="evac-medic" placeholder="חובש מלווה" style="flex:1;font-size:11px;padding-left:6px">
+                <span style="font-size:16px;line-height:1;min-width:20px;text-align:center">🔫</span>
+                <input class="inp" id="evac-guard" placeholder="אבטחה" style="flex:1;font-size:11px;padding-left:6px">
+              </div>
+              <button class="btn btn-sm btn-olive btn-full" onclick="saveEvacForce()">💾 שמור כוח מפנה</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Leadership -->
+        <div class="prep-grp prep-grp-force" style="margin:0 10px 6px">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">🎖️</span>
+            <span style="font-size:12px;font-weight:700;flex:1">מנהלה ופיקוד</span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▾</span>
+          </div>
+          <div
+            style="display:block;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:12px">
+            <div class="col" style="gap:8px">
+              <label style="font-size:10px;color:var(--muted2);font-weight:700">שם המשימה / קוד</label>
+              <input class="inp" id="p-mission-name" placeholder="למשל: מבצע 'שוק 2'" onchange="saveState()">
+              
+              <div style="font-size:10px;color:var(--muted2);font-weight:700;margin-top:4px">שרשרת פיקוד</div>
+              <div id="leadership-list" style="display:flex;flex-direction:column;gap:6px"></div>
+              <button class="btn btn-xs btn-ghost" onclick="openAssignLeader()">＋ הגדר בעל תפקיד</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 6: Mission Readiness Dashboard (moved to top of prep screen) -->
+
+        <!-- STEP 7: Equipment Overview -->
+        <div class="prep-grp prep-grp-force" style="margin:0 10px 6px">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">🎒</span>
+            <span style="font-size:12px;font-weight:700;flex:1">סיכום ציוד כוח</span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▾</span>
+          </div>
+          <div
+            style="display:block;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:8px">
+            <div id="equip-summary-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:4px"></div>
+          </div>
+        </div>
+
+        <!-- blood compatibility matrix removed -->
+
+        <!-- STEP 8: Evac Forces Definition -->
+        <div class="prep-grp prep-grp-evac" style="margin:0 10px 6px" data-mode="operational">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px 8px 0 0;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">🚁</span>
+            <span style="font-size:12px;font-weight:700;flex:1">כוחות פינוי</span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▾</span>
+          </div>
+          <div
+            style="display:block;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:8px">
+            <div id="evac-forces-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px">
+              <div style="font-size:11px;color:var(--muted);padding:10px;text-align:center">No evac forces defined</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-md btn-olive btn-full" onclick="openAddEvacForce()">＋ Add Evac Force</button>
+              <button class="btn btn-md btn-ghost" onclick="openETACalc()"
+                style="border-color:var(--olive3);color:var(--olive3)">⏱ ETA Calc</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Training section removed -->
+      </div>
+
+      <!-- ══ 1: WAR ROOM ══ -->
+      <div class="screen" id="sc-war">
+        <!-- ═══ UNIFIED STATUS BAR: GH + Mission Timer + Medics ═══ -->
+        <div class="wr-sit-header" id="wr-sit-header">
+          <div class="gh-chip gh-ok" id="gh-chip" style="display:none">
+            <span class="gh-icon">⏱</span>
+            <span><span class="gh-label">GH </span><span id="gh-time">60:00</span></span>
+          </div>
+          <div class="wr-sit-chip chip-timer" id="sit-mission-timer">
+            ⏱ <span class="sit-val" id="sit-timer-val">00:00</span>
+          </div>
+          <div class="wr-sit-chip chip-medic" id="sit-medics">
+            🩺 <span class="sit-val" id="sit-medic-count">0</span>
+          </div>
+          <div class="wr-sit-chip chip-evac" id="sit-evac-eta" style="display:none">
+            🚁 <span class="sit-val" id="sit-evac-val">--:--</span>
+          </div>
+        </div>
+        <!-- Hidden legacy elements for startGoldenHour compat -->
+        <div id="golden-bars" style="display:none">
+          <span id="gh-fill" style="display:none"></span>
+          <span id="txa-fill" style="display:none"></span>
+        </div>
+
+        <!-- ═══ TRIAGE STRIP with Animated Rings ═══ -->
+        <div class="triage-strip" id="triage-strip">
+          <div class="tstrip-cell tstrip-t1" onclick="scrollToPrio('T1')">
+            <div class="tstrip-ring"><svg width="36" height="36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="#1e0808" stroke-width="3" />
+                <circle id="ring-t1" cx="18" cy="18" r="15" fill="none" stroke="var(--red3)" stroke-width="3"
+                  stroke-dasharray="94.25" stroke-dashoffset="94.25" stroke-linecap="round" />
+              </svg>
+              <div class="tstrip-ring-num" id="ts-t1" style="color:var(--red3)">0</div>
+            </div>
+            <div class="tstrip-lbl" style="color:var(--red3)">T1</div>
+          </div>
+          <div class="tstrip-cell tstrip-t2" onclick="scrollToPrio('T2')">
+            <div class="tstrip-ring"><svg width="36" height="36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="#1a1000" stroke-width="3" />
+                <circle id="ring-t2" cx="18" cy="18" r="15" fill="none" stroke="var(--amber3)" stroke-width="3"
+                  stroke-dasharray="94.25" stroke-dashoffset="94.25" stroke-linecap="round" />
+              </svg>
+              <div class="tstrip-ring-num" id="ts-t2" style="color:var(--amber3)">0</div>
+            </div>
+            <div class="tstrip-lbl" style="color:var(--amber3)">T2</div>
+          </div>
+          <div class="tstrip-cell tstrip-t3" onclick="scrollToPrio('T3')">
+            <div class="tstrip-ring"><svg width="36" height="36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="#0a1200" stroke-width="3" />
+                <circle id="ring-t3" cx="18" cy="18" r="15" fill="none" stroke="var(--green3)" stroke-width="3"
+                  stroke-dasharray="94.25" stroke-dashoffset="94.25" stroke-linecap="round" />
+              </svg>
+              <div class="tstrip-ring-num" id="ts-t3" style="color:var(--green3)">0</div>
+            </div>
+            <div class="tstrip-lbl" style="color:var(--green3)">T3</div>
+          </div>
+          <div class="tstrip-cell tstrip-t4" onclick="scrollToPrio('T4')">
+            <div class="tstrip-ring"><svg width="36" height="36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="#111" stroke-width="3" />
+                <circle id="ring-t4" cx="18" cy="18" r="15" fill="none" stroke="var(--muted)" stroke-width="3"
+                  stroke-dasharray="94.25" stroke-dashoffset="94.25" stroke-linecap="round" />
+              </svg>
+              <div class="tstrip-ring-num" id="ts-t4" style="color:var(--muted)">0</div>
+            </div>
+            <div class="tstrip-lbl" style="color:var(--muted)">T4</div>
+          </div>
+          <div class="tstrip-cell" style="flex:2;background:#0a1408;cursor:pointer" onclick="openRadioTemplates()">
+            <div style="font-size:14px">📻</div>
+            <div class="tstrip-lbl" style="color:var(--olive3)">תבנית רדיו</div>
+          </div>
+          <div class="tstrip-cell" style="flex:2;background:var(--blue);cursor:pointer" onclick="openSyncDashboard('export')">
+            <div style="font-size:14px">📡</div>
+            <div class="tstrip-lbl" style="color:var(--olive3)">מרכז סינכרון - שידור</div>
+          </div>
+        </div>
+
+        <!-- ═══ FILTER STRIP ═══ -->
+        <div class="wr-filter-strip" id="wr-filter-strip">
+          <button class="wr-filter-chip active" data-filter="all" onclick="setWarFilter('all')">הכל</button>
+          <button class="wr-filter-chip" data-filter="needs-tx" onclick="setWarFilter('needs-tx')">⚠ דורש טיפול</button>
+          <button class="wr-filter-chip" data-filter="tq-active" onclick="setWarFilter('tq-active')">🩹 TQ פעיל</button>
+          <button class="wr-filter-chip" data-filter="no-medic" onclick="setWarFilter('no-medic')">👤 ללא מטפל</button>
+          <button class="wr-filter-chip" data-filter="deteriorating" onclick="setWarFilter('deteriorating')">📉
+            הידרדרות</button>
+        </div>
+
+        <!-- ═══ VIEW MODE SWITCHER ═══ -->
+        <div class="wr-view-switcher" id="wr-view-switcher">
+          <button class="vmode-btn vmode-active" data-view="cards" onclick="setWarView('cards')">📋 כרטיסים</button>
+          <button class="vmode-btn" data-view="matrix" onclick="setWarView('matrix')">📊 מטריצה</button>
+          <button class="vmode-btn" data-view="triage" onclick="setWarView('triage')">🔴 טריאז'</button>
+        </div>
+
+        <!-- Deterioration banners (injected dynamically) -->
+        <div id="deteri-banners"></div>
+
+        <!-- Casualty section label -->
+        <div class="sec" id="cas-sec" style="margin-top:2px">פצועים <span id="cas-count"
+            style="color:var(--muted2);font-size:11px"></span>
+          <span id="res-warn-badge"
+            style="display:none;font-size:9px;padding:2px 6px;background:var(--red2);color:#fff;border-radius:3px;margin-right:4px">⚠
+            חוסר ציוד</span>
+          <button class="btn btn-xs btn-ghost" onclick="openControlBoard()"
+            style="font-size:10px;padding:0 8px;min-height:22px;border-color:var(--b1);color:var(--olive3)">📋
+            שליטה</button>
+          <button class="btn btn-xs btn-ghost" onclick="openForm101()"
+            style="font-size:10px;padding:0 8px;min-height:22px;border-color:var(--b1);color:var(--olive3)">📄
+            טופס 101</button>
+          <button class="btn btn-xs btn-ghost" onclick="openTriageTags()"
+            style="font-size:10px;padding:0 8px;min-height:22px;border-color:var(--b1);color:var(--olive3)">🏷️
+            תגים טריאז'</button>
+        </div>
+
+        <!-- ═══ VIEW: CARDS (default) ═══ -->
+        <div id="wr-view-cards">
+          <div id="cas-list"></div>
+        </div>
+
+        <!-- ═══ VIEW: MATRIX — table overview ═══ -->
+        <div id="wr-view-matrix" style="display:none">
+          <div style="padding:6px 10px;overflow-x:auto">
+            <table class="wr-matrix-table" id="wr-matrix-table">
+              <thead>
+                <tr>
+                  <th style="width:28px">#</th>
+                  <th>שם</th>
+                  <th>T</th>
+                  <th>דופק</th>
+                  <th>BP</th>
+                  <th>SpO2</th>
+                  <th>TQ</th>
+                  <th>סטטוס</th>
+                </tr>
+              </thead>
+              <tbody id="matrix-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ VIEW: TRIAGE BOARD — kanban ═══ -->
+        <div id="wr-view-triage" style="display:none">
+          <div
+            style="display:flex;gap:0;overflow-x:auto;padding:6px 8px;min-height:300px;-webkit-overflow-scrolling:touch"
+            id="triage-board">
+            <div class="tb-col tb-col-t1" id="tb-col-t1">
+              <div class="tb-col-hdr" style="background:var(--red2)">T1 מיידי</div>
+            </div>
+            <div class="tb-col tb-col-t2" id="tb-col-t2">
+              <div class="tb-col-hdr" style="background:var(--orange2)">T2 דחוף</div>
+            </div>
+            <div class="tb-col tb-col-t3" id="tb-col-t3">
+              <div class="tb-col-hdr" style="background:var(--green2)">T3 קל</div>
+            </div>
+            <div class="tb-col tb-col-t4" id="tb-col-t4">
+              <div class="tb-col-hdr" style="background:#444">T4 נפטר</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ VIEW: MARCH overview ═══ -->
+        <div id="wr-view-march" style="display:none">
+          <div style="padding:6px 10px;overflow-x:auto">
+            <table class="wr-matrix-table" id="wr-march-table">
+              <thead>
+                <tr>
+                  <th>שם</th>
+                  <th>T</th>
+                  <th style="color:var(--red3)">M</th>
+                  <th style="color:var(--orange2)">A</th>
+                  <th style="color:#8866cc">R</th>
+                  <th style="color:var(--olive3)">C</th>
+                  <th style="color:var(--blue2)">H</th>
+                </tr>
+              </thead>
+              <tbody id="march-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ VIEW: BLOOD bank quick ═══ -->
+        <div id="wr-view-blood" style="display:none">
+          <div id="blood-quick-view" style="padding:6px 10px">
+            <div style="font-size:11px;color:var(--muted);padding:8px 0;text-align:center">הוסף לוחמים עם סוג דם לצפייה
+            </div>
+          </div>
+        </div>
+
+        <!-- Board/Medic views (legacy, hidden by default) -->
+        <div id="board-view" style="display:none">
+          <div class="board-wrap" id="board-wrap"></div>
+        </div>
+        <div id="medic-view" style="display:none">
+          <div class="medic-board" id="medic-board"></div>
+        </div>
+
+        <!-- [IMPROVEMENT 5] Sticky bottom bar — core actions + scrollable tools strip -->
+        <div style="height:90px"></div><!-- spacer -->
+
+        <!-- FIRE MODE INLINE PANEL (hidden by default) -->
+        <div id="wr-fire-panel"
+          style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:400;background:linear-gradient(180deg,rgba(40,8,8,.98),rgba(20,4,4,.99));border-top:2px solid var(--red2);padding:6px 8px 10px;max-height:55vh;overflow-y:auto">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <span style="font-size:10px;color:var(--red3);font-weight:900;letter-spacing:.12em;flex:1">🔥 FIRE MODE —
+              MARCH</span>
+            <button class="btn btn-xs btn-ghost" onclick="toggleWrFirePanel()"
+              style="font-size:10px;border-color:var(--red2);color:var(--red3);min-height:22px;padding:0 8px">✕
+              סגור</button>
+          </div>
+          <!-- Target selector -->
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px" id="wr-fire-cas-pills"></div>
+          <!-- AI Next Action -->
+          <div id="wr-fire-next" onclick="executeNextAction();updateWrFirePanel()"
+            style="display:none;background:linear-gradient(135deg,#1a2a10,#0a1a08);border:1px solid var(--olive3);border-radius:8px;padding:8px;margin-bottom:6px;cursor:pointer">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div id="wr-fire-next-icon" style="font-size:22px">⚡</div>
+              <div style="flex:1">
+                <div style="font-size:8px;color:var(--olive3);font-weight:700;letter-spacing:.1em">NEXT BEST ACTION
+                </div>
+                <div id="wr-fire-next-text" style="font-size:12px;font-weight:900;color:#fff">—</div>
+              </div>
+              <div style="font-size:14px;color:var(--olive3)">▶</div>
+            </div>
+          </div>
+          <!-- MARCH grid -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            <button class="fire-btn" style="background:var(--red2);min-height:60px"
+              onclick="fireTQ();updateWrFirePanel()">
+              <div class="fire-btn-icon">🩹</div>
+              <div class="fire-btn-label">TQ</div>
+              <div class="fire-btn-sub">M — דימום</div>
+            </button>
+            <button class="fire-btn" style="background:var(--orange2);min-height:60px"
+              onclick="fireAirway();updateWrFirePanel()">
+              <div class="fire-btn-icon">💨</div>
+              <div class="fire-btn-label">Airway</div>
+              <div class="fire-btn-sub">A — נתיב אוויר</div>
+            </button>
+            <button class="fire-btn" style="background:#554488;min-height:60px"
+              onclick="fireChestSeal();updateWrFirePanel()">
+              <div class="fire-btn-icon">🫁</div>
+              <div class="fire-btn-label">Chest Seal</div>
+              <div class="fire-btn-sub">R — חזה</div>
+            </button>
+            <button class="fire-btn" style="background:var(--olive);min-height:60px"
+              onclick="fireTXA();updateWrFirePanel()">
+              <div class="fire-btn-icon">💉</div>
+              <div class="fire-btn-label">TXA + IV</div>
+              <div class="fire-btn-sub">C — מחזור</div>
+            </button>
+            <button class="fire-btn" style="background:var(--blue2);min-height:60px" onclick="fireCasevac()">
+              <div class="fire-btn-icon">🚁</div>
+              <div class="fire-btn-label">CASEVAC</div>
+              <div class="fire-btn-sub">פינוי מיידי</div>
+            </button>
+            <button class="fire-btn" style="background:#333;min-height:60px"
+              onclick="fireExpectant();updateWrFirePanel()">
+              <div class="fire-btn-icon">⬛</div>
+              <div class="fire-btn-label">T4</div>
+              <div class="fire-btn-sub">EXPECTANT</div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ TOOLS MENU — Full-screen categorized ═══ -->
+      <!-- ═══ TOOLS MENU — Bottom Sheet Variant ═══ -->
+      <div id="tools-menu" class="tools-bottom-sheet"
+        style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:480;display:none;align-items:flex-end;justify-content:center"
+        onclick="if(event.target===this) closeToolsMenu()">
+        <div
+          style="width:100%;max-width:480px;background:var(--b0);border-radius:16px 16px 0 0;padding:16px 12px 24px;box-shadow:0 -5px 30px rgba(0,0,0,.5);animation:slideUp .2s ease-out">
+          <div style="width:40px;height:4px;background:var(--muted);border-radius:2px;margin:0 auto 16px"></div>
+          <div style="font-size:16px;font-weight:900;text-align:center;margin-bottom:16px;color:var(--white)">🧰 פיצ'רים
+            וכלים</div>
+
+          <div class="tools-grid-sm"
+            style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openSwipeMode()" style="height:60px"><span
+                style="font-size:20px">👆</span><span style="font-size:10px">Focus</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openMassSort()" style="height:60px"><span
+                style="font-size:20px">⚡</span><span style="font-size:10px">Mass Sort</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openRadioTemplates()" style="height:60px"><span
+                style="font-size:20px">📻</span><span style="font-size:10px">רדיו</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openSmartChecklist()" style="height:60px"><span
+                style="font-size:20px">✅</span><span style="font-size:10px">Checklist</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openClosingProtocol()" style="height:60px"><span
+                style="font-size:20px">🏁</span><span style="font-size:10px">סגירה</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openControlBoard()" style="height:60px"><span
+                style="font-size:20px">📊</span><span style="font-size:10px">לוח שליטה</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openHandoffPick()" style="height:60px"><span
+                style="font-size:20px">✋</span><span style="font-size:10px">Hand-Off</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openResourceCalc()" style="height:60px"><span
+                style="font-size:20px">🔧</span><span style="font-size:10px">משאבים</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openMedicAllocView()" style="height:60px"><span
+                style="font-size:20px">👨‍⚕️</span><span style="font-size:10px">Medics</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openETACalc()" style="height:60px"><span
+                style="font-size:20px">⏱</span><span style="font-size:10px">ETA</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openReferenceLibrary()"
+              style="height:60px"><span style="font-size:20px">📚</span><span style="font-size:10px">Ref</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openOperationsList()" style="height:60px"><span
+                style="font-size:20px">📁</span><span style="font-size:10px">מבצעים</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();openTraining()" style="height:60px"><span
+                style="font-size:20px">🎓</span><span style="font-size:10px">אימון AI</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();setWarView('march')" style="height:60px"><span
+                style="font-size:20px">🩹</span><span style="font-size:10px">MARCH</span></button>
+            <button class="btn btn-ghost col" onclick="closeToolsMenu();setWarView('blood')" style="height:60px"><span
+                style="font-size:20px">🩸</span><span style="font-size:10px">דם</span></button>
+          </div>
+
+          <!-- Protocols row -->
+          <div style="font-size:11px;color:var(--olive3);font-weight:700;margin-bottom:8px">🏥 פרוטוקולים נוספים</div>
+          <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px">
+            <button class="btn btn-sm btn-ghost" onclick="closeToolsMenu();openDecisionTree()"
+              style="white-space:nowrap">🌳 MARCH</button>
+            <button class="btn btn-sm btn-ghost" onclick="closeToolsMenu();openSABCDE()" style="white-space:nowrap">🏥
+              SABCDE</button>
+            <button class="btn btn-sm btn-ghost" onclick="closeToolsMenu();openPFC()" style="white-space:nowrap">🕐
+              PFC</button>
+            <button class="btn btn-sm btn-ghost" onclick="closeToolsMenu();openMedInteractions()"
+              style="white-space:nowrap">💊 אינטראקציות</button>
+          </div>
+
+          <!-- End mission -->
+          <div style="border-top:1px solid var(--b0);padding-top:12px">
+            <button class="btn btn-md btn-ghost btn-full" onclick="closeToolsMenu();endMission()"
+              style="border-color:var(--red2);color:var(--red3)">⏹ סיים אר"ן</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FIRE MODE — MARCH-ordered ══ -->
+      <div class="screen" id="sc-fire">
+        <div style="padding:12px">
+
+          <!-- STEP 1: Who are you treating? + Quick Add -->
+          <div
+            style="background:var(--crit-bg);border:2px solid var(--red2);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+              <span style="font-size:9px;color:var(--red3);font-weight:700;letter-spacing:.1em;flex:1">🎯 על מי אתה
+                פועל?</span>
+              <button class="btn btn-xs btn-red" onclick="quickAddCas()"
+                style="font-size:10px;padding:2px 8px;border-radius:5px">⊕ פגוע חדש</button>
+            </div>
+            <div id="fire-cas-selector-top" style="display:flex;flex-wrap:wrap;gap:4px">
+              <div style="font-size:11px;color:var(--muted)">אין פגועים — לחץ ⊕</div>
+            </div>
+          </div>
+
+          <!-- AI ADVISOR — smart offline recommendations -->
+          <div id="ai-advisor-panel" style="margin-bottom:8px">
+            <div
+              style="background:linear-gradient(135deg,#0a1a30,#0a0a20);border:1px solid #1a3060;border-radius:10px;padding:10px 12px">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                <span style="font-size:14px">🤖</span>
+                <span style="font-size:10px;font-weight:900;color:#66aaff;letter-spacing:.08em">AI ADVISOR</span>
+                <span style="font-size:8px;color:#335588;margin-right:auto">OFFLINE</span>
+              </div>
+              <div id="ai-advisor-content" style="font-size:11px;color:#88bbee;line-height:1.6">
+                הפעל אר"ן והוסף פגועים לקבלת המלצות
+              </div>
+            </div>
+          </div>
+
+          <!-- 🎯 NEXT BEST ACTION — one-tap AI recommendation -->
+          <div id="ai-next-action" onclick="executeNextAction()"
+            style="background:linear-gradient(135deg,#1a2a10,#0a1a08);border:2px solid var(--olive3);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;display:none">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div id="ai-next-icon" style="font-size:28px;flex-shrink:0;animation:pulse 2s ease-in-out infinite">⚡
+              </div>
+              <div style="flex:1">
+                <div style="font-size:8px;color:var(--olive3);font-weight:700;letter-spacing:.1em">🎯 NEXT BEST ACTION —
+                  לחץ לביצוע</div>
+                <div id="ai-next-text" style="font-size:13px;font-weight:900;color:var(--white);margin-top:2px">—</div>
+                <div id="ai-next-sub" style="font-size:9px;color:var(--muted2);margin-top:1px">—</div>
+              </div>
+              <div style="font-size:18px;color:var(--olive3)">▶</div>
+            </div>
+          </div>
+
+          <!-- STEP 2: MARCH-ordered actions -->
+          <div style="font-size:8px;color:var(--muted);text-align:center;letter-spacing:.2em;margin-bottom:6px">M · A ·
+            R · C · H — בחר פעולה</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="fire-btn" style="background:var(--red2);min-height:80px" onclick="fireTQ()">
+              <div class="fire-btn-icon">🩹</div>
+              <div class="fire-btn-label">TQ</div>
+              <div class="fire-btn-sub">M — חסם דימום</div>
+            </button>
+            <button class="fire-btn" style="background:var(--orange2);min-height:80px" onclick="fireAirway()">
+              <div class="fire-btn-icon">💨</div>
+              <div class="fire-btn-label">נתיב אוויר</div>
+              <div class="fire-btn-sub">A — NPA / Cric</div>
+            </button>
+            <button class="fire-btn" style="background:#554488;min-height:80px" onclick="fireChestSeal()">
+              <div class="fire-btn-icon">🫁</div>
+              <div class="fire-btn-label">Chest Seal</div>
+              <div class="fire-btn-sub">R — סגור חזה</div>
+            </button>
+            <button class="fire-btn" style="background:var(--olive);min-height:80px" onclick="fireTXA()">
+              <div class="fire-btn-icon">💉</div>
+              <div class="fire-btn-label">TXA + IV</div>
+              <div class="fire-btn-sub">C — מחזור דם</div>
+            </button>
+            <button class="fire-btn" style="background:var(--blue2);min-height:80px" onclick="fireCasevac()">
+              <div class="fire-btn-icon">🚁</div>
+              <div class="fire-btn-label">קרא פינוי</div>
+              <div class="fire-btn-sub">CASEVAC מיידי</div>
+            </button>
+            <button class="fire-btn" style="background:#333;min-height:80px" onclick="fireExpectant()">
+              <div class="fire-btn-icon">⬛</div>
+              <div class="fire-btn-label">T4</div>
+              <div class="fire-btn-sub">EXPECTANT</div>
+            </button>
+          </div>
+
+          <!-- ⏱ SMART TIMERS — all critical countdowns -->
+          <div id="ai-timers-panel" style="margin-top:10px"></div>
+
+          <!-- 📻 AUTO RADIO SCRIPT — CASEVAC message -->
+          <div id="ai-radio-script" style="margin-top:8px"></div>
+
+          <!-- AI Quick Status — all casualties at a glance -->
+          <div id="ai-quick-status" style="margin-top:8px"></div>
+
+          <!-- 💊 Dose + 📝 Tracker — collapsible -->
+          <div style="margin-top:8px">
+            <div
+              onclick="var b=document.getElementById('fire-ai-details');b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+              style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+              <span style="font-size:12px">🧠</span>
+              <span style="font-size:10px;font-weight:700;flex:1">מינונים + MARCH Tracker</span>
+              <span class="sa" style="font-size:12px;color:var(--muted)">▸</span>
+            </div>
+            <div id="fire-ai-details"
+              style="display:none;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:6px">
+              <div id="ai-dose-calc"></div>
+              <div id="ai-treatment-tracker" style="margin-top:6px"></div>
+            </div>
+          </div>
+
+          <!-- fire-cas-selector removed -->
+        </div>
+      </div>
+
+      <!-- ══ 2: CASUALTY DETAIL ══ -->
+      <div class="screen" id="sc-cas">
+        <div id="cas-detail"></div>
+      </div>
+
+      <!-- ══ 3: BLOOD BANK ══ -->
+      <div class="screen" id="sc-blood">
+        <div class="sec">בלאד בנק — התאמת תורמים</div>
+        <div style="padding:0 10px 8px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">בחר פגוע לקבלת דם:</div>
+          <div id="blood-recip-btns" style="display:flex;flex-direction:column;gap:5px"></div>
+        </div>
+        <div id="blood-results" style="display:none">
+          <div class="sec">תורמים תואמים: <span id="blood-recip-name" style="color:var(--amber2)"></span></div>
+          <div id="donors-list"></div>
+        </div>
+        <div class="sec">רוסטר כוח — סוגי דם</div>
+        <div id="blood-roster"></div>
+
+        <!-- MEDICAL ALLOCATION -->
+        <div class="sec" style="margin-top:6px">🩺 המלצת שיבוץ גורמי רפואה
+          <button class="btn btn-xs btn-olive" style="margin-right:8px" onclick="renderMedAlloc()">⟳ עדכן</button>
+        </div>
+        <div id="med-alloc" style="padding:0 10px 8px">
+          <div style="font-size:11px;color:var(--muted);padding:8px 0">הפעל אר"ן ← ייוצר שיבוץ אוטומטי</div>
+        </div>
+
+        <!-- EVAC PRIORITY -->
+        <div class="sec">🚁 סדר עדיפות פינוי — המלצה
+          <button class="btn btn-xs btn-olive" style="margin-right:8px" onclick="renderEvacPriority()">⟳ עדכן</button>
+        </div>
+        <div id="evac-priority-list" style="padding:0 10px 16px">
+          <div style="font-size:11px;color:var(--muted);padding:8px 0">הוסף פגועים ← ייוצר סדר פינוי</div>
+        </div>
+
+        <div class="sec">🚁 כוח מפנה + תדרים (מהכנה)</div>
+        <div id="evac-war-snapshot" style="padding:0 10px 14px">
+          <div style="font-size:11px;color:var(--muted);padding:8px 0">שמור נתוני פינוי בטאב הכנה → פינוי</div>
+        </div>
+
+      </div>
+
+      <!-- ══ REPORT — accessible from war room tools ══ -->
+      <div class="screen" id="sc-report">
+
+        <!-- Back to war room -->
+        <div style="padding:8px 10px 4px">
+          <button class="btn btn-sm btn-ghost" onclick="goScreen('sc-war');setNav(1)"
+            style="font-size:11px;border-color:var(--b1);color:var(--olive3)">← חזור לאר"ן</button>
+        </div>
+
+        <!-- Quick action shortcuts -->
+        <div style="padding:4px 10px 4px;display:flex;gap:6px">
+          <button class="btn btn-sm btn-ghost btn-full" onclick="openRadioTemplates()"
+            style="border-color:var(--olive3);color:var(--olive3)">📻 תבניות רדיו</button>
+          <button class="btn btn-sm btn-ghost btn-full" onclick="genReport();copyReport()"
+            style="border-color:var(--amber);color:var(--amber3)">📋 העתק 9-LINE</button>
+        </div>
+
+        <!-- 9-LINE MEDEVAC — most important, always visible -->
+        <div style="margin:4px 10px 6px">
+          <div style="background:var(--s2);border:1px solid var(--olive3);border-radius:10px;padding:12px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span style="font-size:16px">📡</span>
+              <span style="font-size:13px;font-weight:900;flex:1">דוח 9-LINE MEDEVAC</span>
+              <button class="btn btn-xs btn-olive" onclick="genReport()">⚡ צור</button>
+              <button class="btn btn-xs btn-ghost" onclick="copyReport()">📋</button>
+              <button class="btn btn-xs btn-ghost" onclick="readReport()">🔊</button>
+            </div>
+            <div class="report-box" id="report-txt" style="font-size:11px;max-height:200px;overflow-y:auto">לחץ "צור"
+              להפקת הדוח...</div>
+          </div>
+        </div>
+
+        <!-- QR per casualty removed -->
+
+        <!-- Supply — collapsible -->
+        <div style="margin:0 10px 6px">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">📦</span>
+            <span style="font-size:12px;font-weight:700;flex:1">מלאי ציוד</span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▸</span>
+          </div>
+          <div
+            style="display:none;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:8px">
+            <div id="supply-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px"></div>
+          </div>
+        </div>
+
+        <!-- blood bank section removed -->
+
+        <!-- Medical & Evac — collapsible -->
+        <div style="margin:0 10px 6px">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">🚁</span>
+            <span style="font-size:12px;font-weight:700;flex:1">שיבוץ רפואי + עדיפות פינוי</span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▸</span>
+          </div>
+          <div
+            style="display:none;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:8px">
+            <div style="font-size:10px;font-weight:700;color:var(--olive3);margin-bottom:4px">🩺 שיבוץ גורמי רפואה</div>
+            <div id="med-alloc-inline" style="margin-bottom:8px">
+              <div style="font-size:11px;color:var(--muted);padding:4px 0">הפעל אר"ן ← ייוצר שיבוץ</div>
+            </div>
+            <div style="font-size:10px;font-weight:700;color:var(--olive3);margin-bottom:4px">🚁 סדר עדיפות פינוי</div>
+            <div id="evac-priority-inline">
+              <div style="font-size:11px;color:var(--muted);padding:4px 0">הוסף פגועים ← ייוצר סדר</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- sync/export section removed -->
+
+        <!-- Bottom actions -->
+        <div style="padding:4px 10px 8px;display:flex;gap:6px">
+          <button class="btn btn-sm btn-ghost btn-full" onclick="openTriageTags()">🏷️ תגי טריאז'</button>
+          <button class="btn btn-sm btn-ghost btn-full" onclick="window.print()">🖨️ הדפס</button>
+        </div>
+
+        <!-- reset button removed -->
+      </div>
+
+      <!-- ══ 2: תחקיר — Sub-tabbed Dashboard ══ -->
+      <div class="screen" id="sc-stats">
+
+        <!-- SUB-TAB NAV for stats -->
+        <div class="sub-tabs" id="stats-sub-tabs">
+          <button class="sub-tab active" onclick="setStatsTab('perf')">📈 ביצועים</button>
+        </div>
+
+        <!-- stats-grid removed -->
+
+        <!-- KPI — collapsible -->
+        <div class="stats-grp stats-grp-perf" style="margin:4px 10px 6px">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">📈</span>
+            <span style="font-size:12px;font-weight:700;flex:1">KPI — מדדי ביצוע</span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▾</span>
+          </div>
+          <div
+            style="background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:8px"
+            id="kpi-dashboard">
+            <div style="font-size:11px;color:var(--muted);padding:8px;text-align:center">הפעל אר"ן עם פגועים</div>
+          </div>
+        </div>
+
+        <!-- TQ Risk — collapsible -->
+        <div class="stats-grp stats-grp-perf" style="margin:0 10px 6px">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾'"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">🩹</span>
+            <span style="font-size:12px;font-weight:700;flex:1">TQ — סיכון עצבי</span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▸</span>
+          </div>
+          <div
+            style="display:none;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;padding:8px">
+            <div id="tq-stats" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+        </div>
+
+        <!-- Timeline — inline preview + expand -->
+        <div class="stats-grp stats-grp-perf" style="margin:0 10px 6px">
+          <div
+            onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.sa').textContent=b.style.display==='none'?'▸':'▾';if(b.style.display!=='none')renderTimeline()"
+            style="background:var(--s2);border:1px solid var(--b0);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">📜</span>
+            <span style="font-size:12px;font-weight:700;flex:1">Timeline — ציר אירועים</span>
+            <span class="sa" style="font-size:12px;color:var(--muted)">▸</span>
+          </div>
+          <div
+            style="display:none;background:var(--s1);border:1px solid var(--b0);border-top:none;border-radius:0 0 8px 8px;max-height:300px;overflow-y:auto">
+            <div id="timeline-list-inline" style="padding:4px 0"></div>
+          </div>
+        </div>
+
+        <!-- QR per casualty removed -->
+
+        <!-- Equipment section removed -->
+
+        <!-- Blood Bank removed -->
+
+        <!-- Notification Hub — Accordion (Update Center) -->
+        <div class="stats-grp stats-grp-perf acc-supreme" style="margin:0 10px 8px">
+          <div class="acc-hdr" onclick="toggleAcc(this)" style="border-left:4px solid var(--red2);">
+            <span class="acc-icon">🔔</span>
+            <span class="acc-title">מרכז עדכונים והתראות</span>
+            <span class="sa acc-arrow">▸</span>
+          </div>
+          <div class="acc-body">
+            <div id="stat-updates-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px">
+              <div style="font-size:11px; color:var(--muted); text-align:center; padding:10px">אין עדכונים חדשים</div>
+            </div>
+            <button class="btn btn-md btn-red btn-full" onclick="openSAPulse()">⚠️ אשר מצב פצועים (SA Pulse)</button>
+            <button class="btn btn-sm btn-ghost btn-full" onclick="openSmartChecklist()" style="margin-top:6px">📋 בד"ח חובש חכם</button>
+          </div>
+        </div>
+
+        <!-- Timeline — Accordion -->
+        <div class="stats-grp stats-grp-perf acc-supreme" style="margin:0 10px 8px">
+          <div class="acc-hdr" onclick="toggleAcc(this); if(this.closest('.acc-supreme').classList.contains('open')) renderTimeline()">
+            <span class="acc-icon">📜</span>
+            <span class="acc-title">ציר זמן — היסטוריית אירוע</span>
+            <span class="sa acc-arrow">▸</span>
+          </div>
+          <div class="acc-body">
+             <div id="timeline-list-stats" style="max-height:300px; overflow-y:auto; font-size:11px"></div>
+             <button class="btn btn-xs btn-ghost btn-full" onclick="goScreen('sc-timeline')" style="margin-top:10px">פתח ציר זמן מלא ↗</button>
+          </div>
+        </div>
+
+
+        <!-- Sync & Export — Accordion -->
+        <div class="stats-grp stats-grp-perf acc-supreme" style="margin:0 10px 8px">
+          <div class="acc-hdr" onclick="toggleAcc(this)">
+            <span class="acc-icon">🔗</span>
+            <span class="acc-title">סנכרון + ייצוא/ייבוא</span>
+            <span class="sa acc-arrow">▸</span>
+          </div>
+          <div class="acc-body">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <button class="btn btn-md btn-olive btn-full" onclick="exportStateQR()">📤 ייצא QR מהיר</button>
+              <button class="btn btn-lg btn-olive btn-full" onclick="openSyncDashboard()"
+                style="padding:16px; font-weight:900; gap:8px; border-radius:12px; margin-bottom:8px">
+                📡 מרכז סנכרון מאוחד (Master)
+              </button>
+              <div id="state-qr-display-stats"
+                style="display:none;background:#fff;border-radius:8px;padding:12px;text-align:center"></div>
+              <div style="border-top:1px solid var(--b0);margin:4px 0;padding-top:6px">
+                <div style="font-size:9px;color:var(--muted);text-align:center;margin-bottom:4px">ייבוא נתונים</div>
+                <textarea class="other-note show" id="import-state-txt-stats" rows="2" placeholder="הדבק כאן..."
+                  style="font-size:10px"></textarea>
+                <button class="btn btn-sm btn-amber btn-full" onclick="doImportState()">📥 טען ייבוא</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Triage Tags button -->
+        <div class="stats-grp stats-grp-perf" style="padding:4px 10px 8px;display:flex;gap:6px">
+          <button class="btn btn-sm btn-ghost btn-full" onclick="openTriageTags()">🏷️ תגי טריאז'</button>
+        </div>
+
+        <!-- 1 prominent action -->
+        <div class="stats-grp stats-grp-perf"
+          style="padding:6px 10px 16px;display:grid;grid-template-columns:1fr;gap:8px">
+          <button class="btn btn-lg btn-ghost btn-full" onclick="openPerformance()"
+            style="flex-direction:column;gap:4px;padding:14px;border-radius:10px;border-color:var(--olive3)">
+            <div style="font-size:24px">📊</div>
+            <div style="font-size:12px;font-weight:700;color:var(--olive3)">ניתוח ביצועים</div>
+          </button>
+        </div>
+
+        <!-- AAR output -->
+        <div class="stats-grp stats-grp-perf" id="aar-section" style="margin:0 10px 8px"></div>
+
+        <!-- Export row -->
+        <div class="stats-grp stats-grp-perf" style="padding:0 10px 16px;display:flex;gap:6px">
+          <button class="btn btn-sm btn-ghost btn-full" onclick="genAAR();window.print()">🖨️ AAR + הדפס</button>
+        </div>
+
+        <!-- Full Reset -->
+        <div style="padding:8px 10px 24px;text-align:center">
+          <div style="border-top:1px solid var(--b0);padding-top:16px;margin-bottom:8px">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:6px">⚠ אזור מסוכן</div>
+            <button class="btn btn-md btn-full" onclick="fullReset()"
+              style="background:transparent;border:2px solid var(--red2);color:var(--red3);font-weight:900;font-size:13px;border-radius:10px;padding:12px">🗑
+              איפוס מלא — מחק הכל</button>
+            <div style="font-size:9px;color:var(--muted);margin-top:6px">מוחק כוח, פגועים, תדרים, ציוד — חוזר למצב
+              התחלתי</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ 6: TIMELINE ══ -->
+      <div class="screen" id="sc-timeline">
+        <div class="sec">ציר זמן — כל האירוע</div>
+        <div style="padding:6px 10px 4px;display:flex;gap:6px">
+          <button class="btn btn-sm btn-ghost btn-full" onclick="window.print()">🖨️ PDF / הדפס</button>
+          <button class="btn btn-sm btn-ghost btn-full" onclick="genAAR();window.print()">📊 AAR + הדפס</button>
+        </div>
+        <div id="timeline-list" style="padding:0 0 20px">
+          <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">טרם התחיל אירוע</div>
+        </div>
+      </div>
+
+    </main><!-- /content -->
+
+    <!-- ════ BOTTOM NAV — modern pill style ════ -->
+    <nav id="bottomnav" role="navigation" aria-label="ניווט ראשי">
+      <button class="nav-btn" id="nav2"
+        onclick="navGuard(2,'sc-stats',()=>{renderStats();renderTimeline();renderGantt();})" aria-label="נתונים">
+        <div class="ni"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+        <div class="nl">נתונים</div>
+        <div class="nav-badge nav-badge-amber" id="badge-evac" style="display:none"></div>
+      </button>
+      <button class="nav-btn" id="nav1" onclick="navGuard(1,'sc-war',()=>{renderWarRoom()})" aria-label="חדר מלחמה">
+        <div class="ni"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3l6 6 6-6"/><path d="M6 21l6-6 6 6"/></svg></div>
+        <div class="nl">אר"ן</div>
+        <div class="nav-badge" id="badge-t1" style="display:none"></div>
+        <div class="nav-active-bar"></div>
+      </button>
+      <button class="nav-btn active" id="nav0" onclick="navGuard(0,'sc-prep',()=>{})" aria-label="הכנה">
+        <div class="ni"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="nl" id="nl0">הכנה</div>
+      </button>
+    </nav>
+  </div><!-- /app -->
+
+  <!-- ════ OVERLAYS ════ -->
+  <div id="modal-overlay-template-root"></div>
+  <script src="js/vendor/qrcode.min.js"></script>
+  <script src="js/vendor/jsQR.min.js"></script>
+  <!-- v2: source in js/parts/ (40 files, max 300 lines each) — run: node concat-parts.js -->
+  <!-- LEGACY RUNTIME — gradual decoupling target: each window.* global will be replaced by a service in src/ -->
+    <!-- ════ GLOBAL SCRIPTS ════ -->
+    <script>
+      function toggleAcc(el) {
+        const acc = el.closest('.acc-supreme');
+        acc.classList.toggle('open');
+      }
+    </script>
+  <script id="legacy-app-script" data-legacy="true" src="js/app.js"></script>
+  <script id="legacy-enhancements-script" data-legacy="true" src="js/enhancements.js"></script>
+  <script type="module" src="/src/main.js"></script>
+
+  <!-- ════ OVERLAYS & DYNAMIC COMPONENTS ════ -->
+  <div id="overlay-template-root">
+    <!-- ════ CASUALTY DRAWER ════ -->
+    <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+    <div class="cas-drawer" id="cas-drawer">
+      <div class="drawer-handle" onclick="closeDrawer()"></div>
+      <div class="drawer-header" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px 6px">
+        <div id="drawer-prio-badge" class="prio pt1">T1</div>
+        <div id="drawer-cas-name" style="font-size:18px;font-weight:900">פצוע</div>
+        <div id="drawer-cas-meta" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"></div>
+        <div class="drawer-close" onclick="closeDrawer()" style="margin-right:auto">✕</div>
+      </div>
+      <div class="drawer-body" id="drawer-body"></div>
+    </div>
+
+    <!-- ════ FIRE ACTION SHEET (The "+" Menu) ════ -->
+    <div class="fire-sheet" id="fire-sheet">
+      <div class="fire-sheet-hdr">פעולות מהירות ⚡</div>
+      <div class="fire-grid">
+        <button class="fire-btn" onclick="fireTQCurrent()">
+          <div class="fi">🩹</div><div class="fl">TQ</div>
+        </button>
+        <button class="fire-btn" onclick="addTXACurrent()">
+          <div class="fi">💉</div><div class="fl">TXA</div>
+        </button>
+        <button class="fire-btn" onclick="fireAirway()">
+          <div class="fi">🌬️</div><div class="fl">NPA</div>
+        </button>
+        <button class="fire-btn" onclick="fireChestSeal()">
+          <div class="fi">🫁</div><div class="fl">Seal</div>
+        </button>
+        <button class="fire-btn" onclick="startManualTQ(_drawerCasId)">
+          <div class="fi">⏱</div><div class="fl">Timer</div>
+        </button>
+        <button class="fire-btn" onclick="toggleRecording()">
+          <div class="fi">🎙️</div><div class="fl">Rec</div>
+        </button>
+        
+        <!-- TRAINING OPTIONS (Subtle but accessible) -->
+        <button class="fire-btn" onclick="startDynamicTraining('easy')" style="border-color:#4a2;background:rgba(0,100,0,.1)">
+          <div class="fi">🎓</div><div class="fl" style="color:#4a2">קל</div>
+        </button>
+        <button class="fire-btn" onclick="startDynamicTraining('medium')" style="border-color:#a82;background:rgba(100,80,0,.1)">
+          <div class="fi">🎓</div><div class="fl" style="color:#a82">בינוני</div>
+        </button>
+        <button class="fire-btn" onclick="startDynamicTraining('hard')" style="border-color:#c22;background:rgba(100,0,0,.1)">
+          <div class="fi">🎓</div><div class="fl" style="color:#c22">קשה</div>
+        </button>
+        <button class="fire-btn" onclick="openOperationsList()" style="border-color:#48a;background:rgba(0,50,150,.1)">
+          <div class="fi">📁</div><div class="fl" style="color:#48a">מבצעים</div>
+        </button>
+      </div>
+      <button class="btn btn-md btn-ghost btn-full" onclick="closeFireSheet()" style="margin-top:12px;color:var(--muted)">סגור</button>
+    </div>
+
+    <!-- ════ WR FAB ════ -->
+    <button id="wr-fab" class="wr-fab" onclick="toggleFireSheet()" title="פעולות מהירות" style="display:none">＋</button>
+
+    <!-- ════ GLOBAL INJURY POPUP ════ -->
+    <div id="inj-popup-global" class="inj-popup" style="display:none">
+      <div id="inj-popup-zone" style="font-size:10px;color:var(--muted);margin-bottom:6px">בחר סוג פציעה</div>
+      <div id="inj-popup-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:6px"></div>
+      <textarea id="inj-popup-note" class="other-note" style="margin-top:8px" placeholder="פרט..."></textarea>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-sm btn-olive btn-full" onclick="confirmInjury()">שמור</button>
+        <button class="btn btn-sm btn-ghost" onclick="cancelInjury()">ביטול</button>
+      </div>
+    </div>
+
+    <!-- ════ GLOBAL MODAL (The bread and butter) ════ -->
+    <div class="overlay" id="overlay" onclick="closeModalOutside(event)">
+      <div class="modal">
+        <div class="modal-hdr">
+          <div id="modal-title">כותרת</div>
+          <div class="modal-close" onclick="closeModal()">✕</div>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+
+    <!-- ════ QR EXPORT & SYNC ════ -->
+    <div class="overlay" id="qr-export-overlay">
+      <div class="modal" style="max-height:92vh">
+        <div class="modal-hdr"><div>📤 QR Sync — ייצוא מצב</div><div class="modal-close" onclick="closeQRExport()">✕</div></div>
+        <div class="modal-body col" style="padding:16px;align-items:center;text-align:center">
+          <div id="qr-export-code" style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3)"></div>
+          <div id="qr-export-info" style="font-size:11px;color:var(--muted);margin-top:12px"></div>
+          <div style="display:flex;gap:8px;width:100%;margin-top:12px">
+            <button class="btn btn-md btn-ghost btn-full" onclick="copyExportJSON()">📋 העתק JSON</button>
+            <button class="btn btn-md btn-ghost btn-full" onclick="shareStateViaWebShare()">🔗 שתף</button>
+          </div>
+          <button class="btn btn-lg btn-olive btn-full" style="margin-top:8px" onclick="closeQRExport()">סיום</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ QR SCAN OVERLAY ════ -->
+    <div class="overlay" id="qr-scan-overlay">
+      <div class="qr-scan-container">
+        <video id="qr-scan-video" playsinline></video>
+        <div class="qr-scan-guide">
+          <div class="qr-scan-corner tl"></div><div class="qr-scan-corner tr"></div>
+          <div class="qr-scan-corner bl"></div><div class="qr-scan-corner br"></div>
+        </div>
+        <div class="qr-scan-header">
+          <button class="btn btn-sm btn-ghost" onclick="stopQRScan()" style="color:#fff">✕</button>
+          <div style="flex:1;text-align:center;font-weight:900;text-shadow:0 2px 4px rgba(0,0,0,1)">📷 סרוק QR</div>
+          <button class="btn btn-sm btn-ghost" id="torch-btn" onclick="toggleScanTorch()" style="display:none">🔦</button>
+        </div>
+        <div id="qr-scan-status" class="qr-scan-status">מחפש QR...</div>
+        <div id="qr-scan-info" class="qr-scan-info"></div>
+        <div class="qr-scan-controls">
+          <button class="btn btn-sm btn-ghost" onclick="triggerQRImageScan()" style="background:rgba(0,0,0,.6);color:#fff">🖼 תמונה</button>
+          <button class="btn btn-sm btn-ghost" onclick="toggleQRPasteArea()" style="background:rgba(0,0,0,.6);color:#fff">📋 הדבק</button>
+        </div>
+        <input type="file" id="qr-scan-file" accept="image/*" style="display:none" onchange="onQRImageSelected(event)">
+        <div id="qr-scan-paste-area" style="display:none;position:absolute;bottom:80px;left:10px;right:10px;background:rgba(20,20,20,.95);padding:10px;border-radius:10px;border:1px solid #444;z-index:100">
+           <textarea id="qr-scan-paste" class="other-note show" rows="4" placeholder="הדבק JSON כאן..."></textarea>
+           <button class="btn btn-md btn-amber btn-full" onclick="importPastedQR()">טען מהדבקה</button>
+        </div>
+        <canvas id="qr-scan-canvas" style="display:none"></canvas>
+        <div id="qr-scan-result" style="display:none;position:absolute;bottom:0;left:0;right:0;background:rgba(10,18,12,.95);padding:16px;border-top:2px solid var(--olive3);z-index:50">
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-md btn-olive btn-full" onclick="importScannedQR()">✓ ייבא נתונים</button>
+            <button class="btn btn-md btn-ghost" onclick="$('qr-scan-result').style.display='none';_resumeScanLoop()">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ SWIPE / FOCUS MODE ════ -->
+    <div class="overlay" id="swipe-overlay">
+      <div style="height:100%;display:flex;flex-direction:column;padding:20px 10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;color:#fff;margin-bottom:12px">
+          <div id="swipe-index" style="font-weight:900;font-size:16px">1/1</div>
+          <div id="swipe-dots" style="display:flex;gap:4px"></div>
+          <button class="btn btn-sm btn-ghost" onclick="closeSwipeMode()" style="color:#fff">✕</button>
+        </div>
+        <div id="swipe-body" style="flex:1;display:flex;align-items:center;justify-content:center"></div>
+        <div style="display:flex;justify-content:space-between;gap:12px;margin-top:20px">
+          <button class="btn btn-xl btn-ghost" style="flex:1;background:rgba(255,255,255,.1);color:#fff" onclick="swipeNav(-1)">PREV</button>
+          <button class="btn btn-xl btn-ghost" style="flex:1;background:rgba(255,255,255,.1);color:#fff" onclick="swipeNav(1)">NEXT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ MASS SORT MODE ════ -->
+    <div class="overlay" id="msort-overlay">
+      <div class="modal" style="height:90vh;display:flex;flex-direction:column">
+        <div class="modal-hdr"><div>🚀 Mass Casualty Sort</div><div class="modal-close" onclick="closeMassSort()">✕</div></div>
+        <div class="pad col" style="flex:1;overflow-y:auto;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;background:var(--s2);padding:10px;border-radius:8px">
+            <div id="msort-timer" style="font-family:monospace;font-size:24px;font-weight:900;color:var(--amber2)">0:00</div>
+            <div id="msort-name" style="font-size:18px;font-weight:900">הזן שם ראשון</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+             <input class="inp" id="msort-name-in" placeholder="שם הפצוע" style="grid-column:span 2">
+             <input class="inp" id="msort-kg-in" type="number" placeholder='ק"ג 70'>
+             <select class="inp" id="msort-blood-in"><option value="">דם?</option><option>O+</option><option>O-</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option></select>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <button class="btn" style="height:100px;background:var(--red2);font-size:24px;flex-direction:column;gap:4px" onclick="msortAssign('T1')">T1 <small id="msc-t1" style="font-size:12px">0</small></button>
+            <button class="btn" style="height:100px;background:var(--orange2);font-size:24px;flex-direction:column;gap:4px" onclick="msortAssign('T2')">T2 <small id="msc-t2" style="font-size:12px">0</small></button>
+            <button class="btn" style="height:100px;background:var(--green2);font-size:24px;flex-direction:column;gap:4px" onclick="msortAssign('T3')">T3 <small id="msc-t3" style="font-size:12px">0</small></button>
+            <button class="btn" style="height:100px;background:#444;font-size:24px;flex-direction:column;gap:4px" onclick="msortAssign('T4')">T4 <small id="msc-t4" style="font-size:12px">0</small></button>
+          </div>
+          <button class="btn btn-xl btn-ghost btn-full" style="margin-top:auto" onclick="closeMassSort()">סיום מיון</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ HOSPITAL HANDOFF OVERLAY ════ -->
+    <div class="overlay" id="hosp-overlay" style="background:var(--bg)">
+      <div style="height:100%;overflow-y:auto;padding-bottom:100px">
+        <div style="position:sticky;top:0;background:rgba(10,10,10,.8);backdrop-filter:blur(10px);padding:16px 10px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--b0);z-index:10">
+          <button class="btn btn-sm btn-ghost" onclick="closeHospHandoff()">✕</button>
+          <div style="font-size:18px;font-weight:900" id="hosp-cas-name">Name</div>
+          <div style="margin-left:auto;font-size:11px;background:var(--red3);padding:2px 8px;border-radius:20px;font-weight:900">HOSPITAL HANDOFF</div>
+        </div>
+        <div id="hosp-body" class="pad col" style="gap:4px"></div>
+      </div>
+    </div>
+
+    <!-- ════ FORM 101 OVERLAY (Full screen) ════ -->
+    <div class="overlay" id="f101-overlay" style="background:#fff;z-index:2000">
+      <div style="height:100%;overflow-y:auto;color:#000">
+        <div style="position:sticky;top:0;background:#f5f5f5;padding:12px;display:flex;align-items:center;gap:12px;border-bottom:2px solid #000;z-index:100">
+          <button class="btn btn-md btn-ghost" style="color:#000;border-color:#000" onclick="$('f101-overlay').style.display='none'">✕ סגור</button>
+          <div style="font-weight:900;flex:1">טופס 101 דיגיטלי</div>
+          <button class="btn btn-md btn-olive" onclick="print101()">🖨️ הדפס</button>
+        </div>
+        <div style="background:var(--s2);padding:8px;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--b0)" id="f101-pick"></div>
+        <div id="f101-content"></div>
+      </div>
+    </div>
+
+    <!-- ════ ALLERGY WARNING BLOCK ════ -->
+    <div id="allergy-block" class="overlay" style="background:rgba(150,0,0,.92);z-index:9000;display:none">
+      <div class="pad col" style="height:100%;align-items:center;justify-content:center;text-align:center;color:#fff;gap:20px">
+        <div style="font-size:80px">⛔</div>
+        <div style="font-size:32px;font-weight:900">סכנת חיים: אלרגיה!</div>
+        <div id="ab-detail" style="font-size:20px;line-height:1.6">פניצילין — אין לתת!</div>
+        <button class="btn btn-xl btn-full" style="background:#fff;color:#c00;border:none" onclick="$('allergy-block').classList.remove('on');$('allergy-block').style.display='none'">הבנתי, מחליף טיפול</button>
+      </div>
+    </div>
+
+    <!-- ════ PERFORMANCE ANALYTICS OVERLAY ════ -->
+    <div class="overlay" id="perf-overlay">
+      <div class="modal" style="height:85vh;display:flex;flex-direction:column">
+        <div class="modal-hdr"><div>📈 ניתוח ביצועים — AAR</div><div class="modal-close" onclick="$('perf-overlay').style.display='none'">✕</div></div>
+        <div class="pad col" style="flex:1;overflow-y:auto" id="perf-body"></div>
+        <div class="pad"><button class="btn btn-lg btn-ghost btn-full" onclick="$('perf-overlay').style.display='none'">סגור</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PRINT STYLES — for PDF export ═══ -->
+  <link rel="stylesheet" href="/src/styles/print.css" media="print">
+
+</body>
