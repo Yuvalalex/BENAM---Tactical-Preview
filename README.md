@@ -59,7 +59,7 @@ BENAM is a tactical medical management system (PWA) built for combat medical tea
 Hybrid architecture — Legacy JS layer (~23,500 lines) alongside a modern TypeScript layer (~5,300 lines) with Dependency Injection, Domain Services, and Background Tasks.
 
 ```text
-BENAM---Tactical-Preview/
+BENAM_1.2/
 ├── index.html            # Full SPA (~1,400 lines)
 ├── manifest.json         # PWA manifest (standalone, RTL, he)
 ├── sw.js                 # Service Worker — cache + offline
@@ -107,8 +107,8 @@ State = {
 
 ### Install & Run
 ```bash
-git clone https://github.com/Yuvalalex/BENAM---Tactical-Preview.git
-cd BENAM---Tactical-Preview
+git clone https://github.com/Yuvalalex/BENAM_1.2.git
+cd BENAM_1.2
 npm install
 npm run dev       # → http://localhost:8080
 ```
@@ -178,7 +178,7 @@ npm run build      # Production build
 
 ```bash
 # 1. Fork + Clone
-git clone https://github.com/YOUR_USERNAME/BENAM---Tactical-Preview.git
+git clone https://github.com/YOUR_USERNAME/BENAM_1.2.git
 
 # 2. New branch
 git checkout -b feature/my-feature
