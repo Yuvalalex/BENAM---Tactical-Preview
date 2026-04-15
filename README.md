@@ -107,8 +107,8 @@ State = {
 
 ### Install & Run
 ```bash
-git clone https://github.com/Yuvalalex/BENAM_1.2.git
-cd BENAM_1.2
+git clone https://github.com/Yuvalalex/BENAM---Tactical-Preview.git
+cd BENAM---Tactical-Preview
 npm install
 npm run dev       # → http://localhost:8080
 ```
@@ -178,7 +178,7 @@ npm run build      # Production build
 
 ```bash
 # 1. Fork + Clone
-git clone https://github.com/YOUR_USERNAME/BENAM_1.2.git
+git clone https://github.com/YOUR_USERNAME/BENAM---Tactical-Preview.git
 
 # 2. New branch
 git checkout -b feature/my-feature
