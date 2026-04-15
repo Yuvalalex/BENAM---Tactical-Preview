@@ -1,6 +1,6 @@
 <div align="center">
 
-# Battlefield Emergency Network & Aid Manager
+# BENAM - Battlefield Emergency Network & Aid Manager
 **// Tactical Medical Incident Management — 100% Offline**
 
 ![offline 100%](https://img.shields.io/badge/offline-100%25-success)
@@ -59,14 +59,14 @@ BENAM is a tactical medical management system (PWA) built for combat medical tea
 Hybrid architecture — Legacy JS layer (~23,500 lines) alongside a modern TypeScript layer (~5,300 lines) with Dependency Injection, Domain Services, and Background Tasks.
 
 ```text
-BENAM_1.2/
-├── index.html            # Full SPA (~1,400 lines)
+BENAM---Tactical-Preview/
+├── index.html            # Full SPA 
 ├── manifest.json         # PWA manifest (standalone, RTL, he)
 ├── sw.js                 # Service Worker — cache + offline
 ├── js/
-│   ├── app.js            # Core engine (~9,600 lines)
-│   ├── enhancements.js   # Feature extensions (~2,200 lines)
-│   └── parts/            # 41 functional modules (~11,700 lines)
+│   ├── app.js            # Core engine 
+│   ├── enhancements.js   # Feature extensions 
+│   └── parts/            # 41 functional modules 
 │       ├── 01-state.js         # State management
 │       ├── 10-war-room.js      # War Room engine
 │       ├── 17-buddy-voice-algo.js  # Voice input (he-IL STT)
@@ -74,7 +74,7 @@ BENAM_1.2/
 │       ├── 25-mesh-sync*.js    # Mesh networking & sync
 │       ├── 34-enh-fire-ai.js   # AI Advisor engine
 │       └── 38..41-enh-idb/audio# IndexedDB + voice recording
-├── src/                  # TypeScript layer (64 files, ~5,300 lines)
+├── src/                  # TypeScript layer (64 files)
 │   ├── core/             # DI container, types, constants
 │   ├── domain/           # Domain services & business logic
 │   ├── features/         # casualty, triage, evacuation, comms
@@ -107,8 +107,8 @@ State = {
 
 ### Install & Run
 ```bash
-git clone https://github.com/Yuvalalex/BENAM_1.2.git
-cd BENAM_1.2
+git clone https://github.com/Yuvalalex/BENAM---Tactical-Preview.git
+cd BENAM---Tactical-Preview
 npm install
 npm run dev       # → http://localhost:8080
 ```
@@ -178,7 +178,7 @@ npm run build      # Production build
 
 ```bash
 # 1. Fork + Clone
-git clone https://github.com/YOUR_USERNAME/BENAM_1.2.git
+git clone https://github.com/YOUR_USERNAME/BENAM---Tactical-Preview.git
 
 # 2. New branch
 git checkout -b feature/my-feature
@@ -198,9 +198,9 @@ git push origin feature/my-feature
 ---
 
 ## About
-**BENAM 1.2**  
+**BENAM**  
 *Built for the field. Works without the cloud.*  
 ISC License © Yuvalalex
 
-- [Report a bug](https://github.com/Yuvalalex/BENAM_1.2/issues)
+- [Report a bug](https://github.com/Yuvalalex/BENAM---Tactical-Preview/issues)
 - [Presentation deck](https://docs.google.com/presentation/d/1dOmADFgqdxe--yQ07pob6icAYKNHVX6_DnLUm9n2ZiU/edit?usp=sharing)
