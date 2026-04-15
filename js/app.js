@@ -6432,12 +6432,7 @@ function renderWarRoom() {
   checkDeteriorationAI();
 
   const list = $('cas-list'); if (!list) return;
-  const sorted = _customCasOrder
-    ? [...S.casualties].sort((a, b) => {
-        const ai = _customCasOrder.indexOf(a.id), bi = _customCasOrder.indexOf(b.id);
-        return (ai < 0 ? 9999 : ai) - (bi < 0 ? 9999 : bi);
-      })
-    : [...S.casualties].sort((a, b) => prioN(a.priority) - prioN(b.priority));
+  const sorted = [...S.casualties].sort((a, b) => prioN(a.priority) - prioN(b.priority));
   const filtered = applyWarFilter(sorted);
   $('cas-count').textContent = sorted.length ? `(${filtered.length}/${sorted.length})` : '';
 
@@ -6479,9 +6474,6 @@ function renderWarRoom() {
   // Init card swipe on touch devices
   initCardSwipe();
 
-  // Init drag & drop reorder for cards view
-  if (!currentWarView || currentWarView === 'cards') initCardDragReorder();
-
   // Refresh active alternate view if not cards
   if (currentWarView === 'matrix') renderMatrixView();
   else if (currentWarView === 'triage') renderTriageBoardView();
@@ -6489,108 +6481,6 @@ function renderWarRoom() {
   else if (currentWarView === 'blood') renderBloodQuickView();
 
   updateBadges();
-}
-
-// ── Card drag & drop reorder ──
-let _cardDragId = null;
-let _customCasOrder = null; // array of casualty ids for user-defined order
-
-function initCardDragReorder() {
-  const list = $('cas-list'); if (!list) return;
-  const cards = list.querySelectorAll('[draggable="true"][data-cas-id]');
-  cards.forEach(card => {
-    card.addEventListener('dragstart', e => {
-      _cardDragId = parseInt(card.dataset.casId);
-      card.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', _cardDragId);
-    });
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-      list.querySelectorAll('[data-cas-id]').forEach(c => c.classList.remove('drag-over-card'));
-    });
-    card.addEventListener('dragover', e => {
-      e.preventDefault();
-      if (parseInt(card.dataset.casId) === _cardDragId) return;
-      card.classList.add('drag-over-card');
-    });
-    card.addEventListener('dragleave', () => {
-      card.classList.remove('drag-over-card');
-    });
-    card.addEventListener('drop', e => {
-      e.preventDefault();
-      card.classList.remove('drag-over-card');
-      if (_cardDragId === null) return;
-      const targetId = parseInt(card.dataset.casId);
-      if (_cardDragId === targetId) return;
-      reorderCasualty(_cardDragId, targetId);
-      _cardDragId = null;
-    });
-  });
-
-  // Touch support for mobile drag
-  let _touchDragEl = null, _touchClone = null, _touchStartY = 0;
-  cards.forEach(card => {
-    card.addEventListener('touchstart', e => {
-      if (e.touches.length !== 1) return;
-      const touch = e.touches[0];
-      _touchStartY = touch.clientY;
-      _touchDragEl = card;
-      _cardDragId = parseInt(card.dataset.casId);
-      // Long press to start drag
-      card._dragTimeout = setTimeout(() => {
-        card.classList.add('dragging');
-        _touchClone = card.cloneNode(true);
-        _touchClone.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;opacity:0.8;width:' + card.offsetWidth + 'px;top:' + touch.clientY + 'px;left:' + touch.clientX + 'px;transform:translate(-50%,-50%)';
-        document.body.appendChild(_touchClone);
-      }, 300);
-    }, { passive: true });
-    card.addEventListener('touchmove', e => {
-      if (!_touchDragEl || !_touchDragEl.classList.contains('dragging')) {
-        clearTimeout(card._dragTimeout);
-        return;
-      }
-      e.preventDefault();
-      const touch = e.touches[0];
-      if (_touchClone) {
-        _touchClone.style.top = touch.clientY + 'px';
-        _touchClone.style.left = touch.clientX + 'px';
-      }
-      // Find drop target
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
-      list.querySelectorAll('[data-cas-id]').forEach(c => c.classList.remove('drag-over-card'));
-      if (el) {
-        const target = el.closest('[data-cas-id]');
-        if (target && parseInt(target.dataset.casId) !== _cardDragId) {
-          target.classList.add('drag-over-card');
-        }
-      }
-    }, { passive: false });
-    card.addEventListener('touchend', e => {
-      clearTimeout(card._dragTimeout);
-      if (!_touchDragEl || !_touchDragEl.classList.contains('dragging')) { _touchDragEl = null; return; }
-      if (_touchClone) { _touchClone.remove(); _touchClone = null; }
-      _touchDragEl.classList.remove('dragging');
-      const overCard = list.querySelector('.drag-over-card');
-      if (overCard && _cardDragId !== null) {
-        const targetId = parseInt(overCard.dataset.casId);
-        reorderCasualty(_cardDragId, targetId);
-      }
-      list.querySelectorAll('[data-cas-id]').forEach(c => c.classList.remove('drag-over-card'));
-      _touchDragEl = null; _cardDragId = null;
-    }, { passive: true });
-  });
-}
-
-function reorderCasualty(dragId, targetId) {
-  const fromIdx = S.casualties.findIndex(c => c.id === dragId);
-  const toIdx = S.casualties.findIndex(c => c.id === targetId);
-  if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
-  const [moved] = S.casualties.splice(fromIdx, 1);
-  S.casualties.splice(toIdx, 0, moved);
-  _customCasOrder = S.casualties.map(c => c.id);
-  saveState();
-  renderWarRoom();
 }
 
 // ══ CONTROL BOARD ══════════════════════════════════
@@ -6714,7 +6604,7 @@ function renderAdaptiveCard(c) {
   const vitRow = renderVitalsRow(c);
 
   if (tier === '4') {
-    return `<div class="cas-card-t4" id="carc-${c.id}" draggable="true" data-cas-id="${c.id}">
+    return `<div class="cas-card-t4" id="carc-${c.id}">
       <div class="cas-hdr-t4" onclick="jumpToCas(${c.id})">
         <span class="prio pt4">T4</span>
         <span class="cas-name-t4">${escHTML(c.name)}</span>
@@ -6726,7 +6616,7 @@ function renderAdaptiveCard(c) {
 
   if (tier === '3') {
     const isOpen = _expandedCards.has(c.id);
-    return `<div class="cas-card-t3" id="carc-${c.id}" draggable="true" data-cas-id="${c.id}">
+    return `<div class="cas-card-t3" id="carc-${c.id}">
       <div class="cas-hdr-t3" onclick="toggleCardExpand(${c.id},event)">
         <span class="prio pt3">T3</span>
         <span class="cas-name-t3">${escHTML(c.name)}</span>
@@ -6750,7 +6640,7 @@ function renderAdaptiveCard(c) {
 
   if (tier === '2') {
     const isOpen = _expandedCards.has(c.id);
-    return `<div class="cas-card-t2" id="carc-${c.id}" draggable="true" data-cas-id="${c.id}">
+    return `<div class="cas-card-t2" id="carc-${c.id}">
       <div class="cas-hdr-t2" onclick="toggleCardExpand(${c.id},event)">
         <span class="prio pt2">T2</span>
         <span class="cas-name-t2">${escHTML(c.name)}</span>
@@ -6779,7 +6669,7 @@ function renderAdaptiveCard(c) {
   const injuryItems = (c.injuries && c.injuries.length) ? c.injuries.map(i => `${i.type} ${i.zone}${i.side ? ' ' + (i.side === 'back' ? '(אחורי)' : '(קדמי)') : ''}`) : [];
   const injurySummary = injuryItems.join(' | ');
   const mechSummary = (c.mech && c.mech.length) ? c.mech.join(' · ') : (injuryItems.length ? injuryItems[0] : '—');
-  return `<div class="cas-card-t1" id="carc-${c.id}" draggable="true" data-cas-id="${c.id}">
+  return `<div class="cas-card-t1" id="carc-${c.id}">
     <div class="cas-hdr-t1" onclick="toggleCardExpand(${c.id},event)">
       <span class="prio pt1" style="font-size:14px">T1</span>
       <div style="flex:1">
