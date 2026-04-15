@@ -6,11 +6,12 @@
 ![offline 100%](https://img.shields.io/badge/offline-100%25-success)
 ![PWA ready](https://img.shields.io/badge/PWA-ready-success)
 ![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-blue)
-![v1.2.0](https://img.shields.io/badge/version-1.2.0-blue)
+![version](https://img.shields.io/badge/version-1.1.0-blue)
 ![E2E Playwright](https://img.shields.io/badge/E2E-Playwright-yellowgreen)
 ![RTL Hebrew](https://img.shields.io/badge/RTL-Hebrew-orange)
 ![Android APK](https://img.shields.io/badge/Android-APK-success)
-![ISC License](https://img.shields.io/badge/License-ISC-red)
+![License ISC](https://img.shields.io/badge/License-ISC-red)
+
 
 *"From commander to medic — one tool, the whole incident, no internet."*
 
@@ -120,6 +121,12 @@ npm test           # Playwright E2E tests
 npm run build      # Production build
 ./build_apk.sh     # Android APK → android/app/build/outputs/apk/debug/
 ```
+
+
+Notes:
+- Default Vite dev URL is typically `http://localhost:5173` unless configured otherwise.
+- Playwright in this repo runs against `http://127.0.0.1:8080` via its own webServer config.
+
 
 *Running via local server is preferred over opening index.html directly — required for Service Worker, PWA install, camera access, and Playwright validation.*
 
