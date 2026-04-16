@@ -6,10 +6,8 @@ Thanks for your interest in contributing to BENAM! This guide will help you get 
 
 ```bash
 # Clone the repository
-git clone https://github.com/Yuvalalex/BENAM_1.2.git
-cd BENAM_1.2
-
-# Install dependencies
+git clone https://github.com/Yuvalalex/BENAM---Tactical-Preview.git
+cd BENAM---Tactical-Preview
 npm install
 
 # Start dev server
@@ -100,7 +98,7 @@ npx playwright test --ui
 
 ## Reporting Issues
 
-Use [GitHub Issues](https://github.com/Yuvalalex/BENAM_1.2/issues) to report bugs or request features. Include:
+Use [GitHub Issues](https://github.com/Yuvalalex/BENAM---Tactical-Preview/issues) to report bugs or request features. Include:
 
 - Steps to reproduce
 - Expected vs actual behavior
