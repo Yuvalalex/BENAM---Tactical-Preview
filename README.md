@@ -161,12 +161,6 @@ Main scripts:
 BENAM is presented here as a technical project and workflow tool.
 This repository is not presented as a regulated clinical decision system, a certified medical product, or a substitute for formal medical command, training, or protocol authority.
 
-## Recommended GitHub Presentation
-
-For the strongest public-facing version of this repository, add the following next:
-- 2 to 4 screenshots or one short GIF near the top of the page
-- A pinned GitHub release for `v1.1.0`
-- A short project video or walkthrough link if available
 
 ## Additional Project Docs
 
