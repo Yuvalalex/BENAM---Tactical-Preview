@@ -9,4 +9,3 @@ test-results/
 test-report/
 *.apk
 .last-run.json
-.claude/
