@@ -1,7 +1,7 @@
 <div align="center">
 
 # BENAM - Battlefield Emergency Network & Aid Manager
-**// Tactical Medical Incident Management — 100% Offline**
+**// Tactical Medical Incident Management - 100% Offline**
 
 ![offline 100%](https://img.shields.io/badge/offline-100%25-success)
 ![PWA ready](https://img.shields.io/badge/PWA-ready-success)
@@ -13,7 +13,7 @@
 ![License ISC](https://img.shields.io/badge/License-ISC-red)
 
 
-*"From commander to medic — one tool, the whole incident, no internet."*
+*"From commander to medic - one tool, the whole incident, no internet."*
 
 <br>
 
@@ -30,12 +30,11 @@ BENAM is a tactical medical management system (PWA) built for combat medical tea
 
 ## User Workflow
 
-1. **PIN Lock** 
-2. **Role Setup** 
-3. **PREP** 
-4. **WAR Mode** (Casualty Card → MARCH Tracker → Vitals History → Treatment Log → Evac Queue) 
-5. **Report** 
-6. **AAR/Stats**
+1. **Mode & Role Setup** 
+2. **PREP** 
+3. **WAR Mode** (Casualty Card → MARCH Tracker → Vitals History → Treatment Log → Evac Queue) 
+4. **Report** 
+5. **AAR/Stats**
 
 ---
 
@@ -45,7 +44,8 @@ BENAM is a tactical medical management system (PWA) built for combat medical tea
 * ⚔️ **Active Incident (WAR Mode)** - Dedicated Fire Mode with minimalist UI, Next Action Engine (NAE) algorithm, Golden Hour countdown, SA Pulse checks, reassessment reminders.
 * 🩹 **Full Casualty Management** - 4-level triage (T1–T4), full casualty profile, MARCH tracker per patient, vitals history, QR codes, digital triage tags, injury photo capture.
 * 🤖 **AI Advisor — Offline** - Rule-based smart analysis without internet. Detects TQ over 30 min, missing TXA, untreated airways, hypothermia risk. Scores each action 0–100 by clinical urgency.
-* 🚁 **CASEVAC Management** - Auto-generates 9-LINE MEDEVAC orders, dynamic evacuation queue with priority scoring, LZ management, evac packages, crew assignment.
+* 🚁 **CASEVAC Management** -Built automated logic for medic-to-casualty distribution, ensuring high-priority patients (T1) are matched with the appropriate medical authority under combat stress.![Uploading image.png…]()
+ Auto-generates 9-LINE MEDEVAC orders, dynamic evacuation queue with priority scoring, LZ management, evac packages, crew assignment.
 * 🌳 **Clinical Protocols Library** - Built-in MARCH Decision Tree, SABCDE (IDF standard), PFC, Blast/IED, Crush Syndrome, Hypothermia, and more — step-by-step guidance.
 * 💉 **Advanced Medical Mgmt** - Blood bank with T-COAG compatibility matrix, weight-based dosage calculator (Morphine, Ketamine, TXA), supply inventory tracking.
 * 📡 **Comms & Documentation** - Comms log, Radio Script Generator, Pre-Mission Brief auto-doc, Hebrew voice input (STT he-IL), Mesh Sync via QR chunking between devices.
@@ -175,7 +175,6 @@ Notes:
 - ✓ **Zero servers** — data never leaves the device
 - ✓ **Zero API calls** — not a single network request
 - ✓ **Zero telemetry** — no tracking, analytics, or external logs
-- ✓ **PIN Lock** — access protection for sensitive patient data
 
 ---
 
