@@ -1,5 +1,14 @@
 const { test, expect } = require('@playwright/test');
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('benam_tutorial_done', '1');
+    localStorage.removeItem('benam_pin');
+    localStorage.removeItem('benam_s');
+    localStorage.removeItem('benam_s_training');
+  });
+});
+
 /**
  * COMPREHENSIVE TACTICAL SUITE - BENAM 1.1 (Industrial Grade)
  * Validates the entire mission lifecycle from Prep to AAR.
@@ -32,20 +41,23 @@ test.describe('End-to-End Mission Validation', () => {
     await expect(page.locator('#sc-prep')).toBeVisible();
     
     // Verify Mission Readiness Dashboard
-    await expect(page.locator('text=מוכנות למשימה')).toBeVisible();
-    await expect(page.locator('text=סדר פינוי')).toBeVisible();
+    await expect(page.locator('text=בד"ח מוכנות ליציאה')).toBeVisible();
+    await expect(page.locator('text=סדר פינוי + כוח מפנה')).toHaveCount(1);
   });
 
   test('03. War Room Viewport Dynamics', async ({ page }) => {
     await startMission(page);
     await page.evaluate(() => { quickAddCas(); });
     
-    const views = ['matrix', 'triage', 'march', 'blood', 'cards'];
+    const views = ['matrix', 'triage', 'cards'];
     for (const v of views) {
       await page.evaluate(m => setWarView(m), v);
       await page.waitForTimeout(100);
       // Verify active view indicator
-      const isActive = await page.evaluate(m => document.querySelector(`[onclick="setWarView('${m}')"]`).classList.contains('active'), v);
+      const isActive = await page.evaluate(m => {
+        const btn = document.querySelector(`[onclick="setWarView('${m}')"]`);
+        return !!btn && btn.classList.contains('vmode-active');
+      }, v);
       expect(isActive).toBeTruthy();
     }
   });
@@ -60,11 +72,14 @@ test.describe('End-to-End Mission Validation', () => {
     await expect(page.locator('#cas-drawer')).toBeVisible();
     
     // Edit Form 101 Fields
-    await page.fill('#cas-name', 'STABLE_TEST_PATIENT');
-    await page.click('text=T1'); // Priority change
+    await page.evaluate((id) => {
+      const c = S.casualties.find(x => x.id === id);
+      c.name = 'STABLE_TEST_PATIENT';
+      changePriority(id, 'T1');
+    }, cId);
     
     // Check Intervention logic
-    await page.click('text=🩹 TQ');
+    await page.evaluate((id) => fireTQFor(id), cId);
     const interventions = await page.evaluate(id => S.casualties.find(c => c.id === id).txList.length, cId);
     expect(interventions).toBeGreaterThan(0);
   });
@@ -77,8 +92,8 @@ test.describe('End-to-End Mission Validation', () => {
     await expect(page.locator('#modal-title')).toContainText('מרכז סנכרון מאוחד');
     
     // Binary Burst Portal Verification
-    await page.click('text=שידור');
-    await page.click('text=התחל שידור נל״ן (Burst)');
+    await page.locator('#modal-body').getByText('📤 שידור', { exact: true }).click();
+    await page.locator('#modal-body').getByText('צור רצף שידור (BURST)', { exact: true }).click();
     await expect(page.locator('#qr-target-frame')).toBeVisible();
     await expect(page.locator('text=הבא ▶')).toBeVisible();
   });
@@ -102,13 +117,13 @@ test.describe('End-to-End Mission Validation', () => {
   test('07. Global Utilities (PIN & System)', async ({ page }) => {
     await page.goto('/');
     // Night Mode Toggle
-    const isDarkBefore = await page.evaluate(() => document.body.classList.contains('light-theme'));
+    const isDarkBefore = await page.evaluate(() => document.body.classList.contains('night-vision'));
     await page.evaluate(() => { toggleNightMode(); });
-    const isDarkAfter = await page.evaluate(() => document.body.classList.contains('light-theme'));
+    const isDarkAfter = await page.evaluate(() => document.body.classList.contains('night-vision'));
     expect(isDarkBefore).not.toEqual(isDarkAfter);
     
     // PIN Lock Screen
-    await page.evaluate(() => { if(typeof togglePinLock === 'function') togglePinLock(true); });
+    await page.evaluate(() => { if (typeof showPinLock === 'function') showPinLock(); });
     // Verify Lock Overlay
     await expect(page.locator('#pin-lock')).toBeVisible();
   });

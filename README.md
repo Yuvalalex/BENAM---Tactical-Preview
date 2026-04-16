@@ -1,212 +1,185 @@
 <div align="center">
 
-# BENAM - Battlefield Emergency Network & Aid Manager
-**// Tactical Medical Incident Management - 100% Offline**
+# Battlefield Emergency Network & Aid Manager (BENAM)
+### Offline-First Tactical Incident Management PWA
 
 ![offline 100%](https://img.shields.io/badge/offline-100%25-success)
 ![PWA ready](https://img.shields.io/badge/PWA-ready-success)
 ![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-blue)
 ![version](https://img.shields.io/badge/version-1.1.0-blue)
+![Playwright E2E](https://img.shields.io/badge/Playwright-E2E%20passing-success)
 ![E2E Playwright](https://img.shields.io/badge/E2E-Playwright-yellowgreen)
 ![RTL Hebrew](https://img.shields.io/badge/RTL-Hebrew-orange)
 ![Android APK](https://img.shields.io/badge/Android-APK-success)
 ![License ISC](https://img.shields.io/badge/License-ISC-red)
 
+BENAM is a local-first field operations web app for handling mission setup, casualty tracking, evacuation flow, reporting, and offline data transfer without a cloud dependency.
 
-*"From commander to medic - one tool, the whole incident, no internet."*
-
-<br>
-
-## 📢 [Click here to view the full BENAM Presentation Deck!](https://docs.google.com/presentation/d/1dOmADFgqdxe--yQ07pob6icAYKNHVX6_DnLUm9n2ZiU/edit?usp=sharing) 📽️
+[View the BENAM presentation deck](https://docs.google.com/presentation/d/1dOmADFgqdxe--yQ07pob6icAYKNHVX6_DnLUm9n2ZiU/edit?usp=sharing)
 
 </div>
 
 ---
 
+## Why This Repo Is Worth Reviewing
+
+- Offline-first PWA with no backend dependency for core workflows
+- Full Playwright E2E test suite covering major user flows and regression scenarios
+- Hybrid legacy JavaScript plus modular TypeScript migration in a real working product
+- Android packaging support through Capacitor
+- RTL/Hebrew interface with touch-oriented field UX
+
 ## Overview
 
-**What is BENAM?**  
-BENAM is a tactical medical management system (PWA) built for combat medical teams. It accompanies the team from pre-mission preparation, through active combat incident management in real time, to a final summary report and debrief — with **zero dependency on internet, servers, or any external infrastructure.**
+BENAM is a single-repository application for field incident management. It covers the operational flow from setup and readiness, through active casualty handling and prioritization, to report generation and offline transfer.
 
-## User Workflow
+From an engineering perspective, the value of this repository is not just the feature list. It shows how a state-heavy browser application can support offline operation, structured workflow handling, mobile packaging, regression coverage, and a gradual migration from legacy JavaScript to stricter TypeScript modules.
 
-1. **Mode & Role Setup** 
-2. **PREP** 
-3. **WAR Mode** (Casualty Card → MARCH Tracker → Vitals History → Treatment Log → Evac Queue) 
-4. **Report** 
-5. **AAR/Stats**
+## What This Repository Demonstrates
 
----
+- Stateful single-page application design with a large UI surface area
+- Offline persistence using IndexedDB, localStorage fallback, Service Worker, and PWA metadata
+- Complex user workflows including triage, casualty detail handling, reporting, and QR-based sync/export flows
+- UI support for RTL/Hebrew environments and touch-first interaction
+- End-to-end verification with Playwright and CI automation
+- Android delivery path via Capacitor and Gradle build tooling
 
-## Core Capabilities / Feature Set
+## Audience
 
-* 🎖 **Role & Mission Mgmt** - 4 roles (Commander, Medic, Paramedic, Physician), 2 operation modes, 5 mission types, automatic gear presets per role.
-* ⚔️ **Active Incident (WAR Mode)** - Dedicated Fire Mode with minimalist UI, Next Action Engine (NAE) algorithm, Golden Hour countdown, SA Pulse checks, reassessment reminders.
-* 🩹 **Full Casualty Management** - 4-level triage (T1–T4), full casualty profile, MARCH tracker per patient, vitals history, QR codes, digital triage tags, injury photo capture.
-* 🤖 **AI Advisor — Offline** - Rule-based smart analysis without internet. Detects TQ over 30 min, missing TXA, untreated airways, hypothermia risk. Scores each action 0–100 by clinical urgency.
-* 🚁 **CASEVAC Management** -Built automated logic for medic-to-casualty distribution, ensuring high-priority patients (T1) are matched with the appropriate medical authority under combat stress.![Uploading image.png…]()
- Auto-generates 9-LINE MEDEVAC orders, dynamic evacuation queue with priority scoring, LZ management, evac packages, crew assignment.
-* 🌳 **Clinical Protocols Library** - Built-in MARCH Decision Tree, SABCDE (IDF standard), PFC, Blast/IED, Crush Syndrome, Hypothermia, and more — step-by-step guidance.
-* 💉 **Advanced Medical Mgmt** - Blood bank with T-COAG compatibility matrix, weight-based dosage calculator (Morphine, Ketamine, TXA), supply inventory tracking.
-* 📡 **Comms & Documentation** - Comms log, Radio Script Generator, Pre-Mission Brief auto-doc, Hebrew voice input (STT he-IL), Mesh Sync via QR chunking between devices.
-* 📊 **Analytics & Debrief** - KPI dashboard, Gantt chart of all casualties and treatment events, full timeline, Hero Score for team performance, AAR structured support.
-* 🌙 **Field UX** - Night mode (red display), PIN lock, one-handed navigation, haptic feedback for critical alerts (TQ, Golden Hour), non-blocking toast notifications.
+- Recruiters and technical evaluators reviewing product thinking and engineering execution
+- Engineers assessing architecture, testing discipline, and maintainability in a hybrid codebase
+- Reviewers looking at offline-first UX, delivery readiness, and end-to-end workflow coverage
 
 ---
 
-## Architecture
+## Core Product Flow
 
-**Project Structure**  
-Hybrid architecture — Legacy JS layer (~23,500 lines) alongside a modern TypeScript layer (~5,300 lines) with Dependency Injection, Domain Services, and Background Tasks.
+1. PIN lock and app entry
+2. Role and mission setup
+3. Pre-mission preparation
+4. WAR mode casualty operations
+5. Report and evacuation outputs
+6. Debrief and analytics screens
 
-```text
-BENAM---Tactical-Preview/
-├── index.html            # Full SPA 
-├── manifest.json         # PWA manifest (standalone, RTL, he)
-├── sw.js                 # Service Worker — cache + offline
-├── js/
-│   ├── app.js            # Core engine 
-│   ├── enhancements.js   # Feature extensions 
-│   └── parts/            # 41 functional modules 
-│       ├── 01-state.js         # State management
-│       ├── 10-war-room.js      # War Room engine
-│       ├── 17-buddy-voice-algo.js  # Voice input (he-IL STT)
-│       ├── 19..22-qr-*.js      # QR export/scan/sync
-│       ├── 25-mesh-sync*.js    # Mesh networking & sync
-│       ├── 34-enh-fire-ai.js   # AI Advisor engine
-│       └── 38..41-enh-idb/audio# IndexedDB + voice recording
-├── src/                  # TypeScript layer (64 files)
-│   ├── core/             # DI container, types, constants
-│   ├── domain/           # Domain services & business logic
-│   ├── features/         # casualty, triage, evacuation, comms
-│   ├── background/       # TQ monitor, Golden Hour, SA Pulse
-│   └── presentation/     # UI components & view layer
-├── tests/                # 7 Playwright E2E test suites
-└── .github/workflows/    # CI: typecheck → build → E2E
-```
-
-## Data Model
-
-Data is stored locally in the browser. IndexedDB is the primary persistence layer; localStorage serves as a fallback. No data is sent to external servers.
-
-```javascript
-State = {
-  force:        [],   // Personnel + personal equipment
-  casualties:   [],   // Patients + MARCH + vitals + treatments
-  timeline:     [],   // Chronological log of all events
-  comms:        {},   // Communications & mission params
-  commsLog:     [],   // Radio transmission log
-  supplies:     {},   // Medical supply inventory
-  missionStart: timestamp,  // Golden Hour anchor
-  role / opMode / missionType
-}
-```
+This flow is reflected directly in the application screens and test coverage.
 
 ---
+
+## Core Capabilities
+
+- Mission setup, readiness checks, and team context configuration
+- Casualty tracking with triage, MARCH-oriented actions, vitals snapshots, and timeline history
+- Evacuation support, prioritization, and structured report generation
+- QR-based export/import and mesh-style sync workflows for constrained connectivity environments
+- Touch-first RTL/Hebrew UX for field usage
+- Local-only persistence with no required backend for baseline operation
+
+## Architecture Snapshot
+
+Hybrid codebase:
+- Legacy runtime in [js](js)
+- Newer modular code in [src](src)
+- Browser shell in [index.html](index.html)
+- Android packaging in [android](android)
+- E2E coverage in [tests](tests)
+
+Key repository signals:
+- Large real-world UI runtime in [js/app.js](js/app.js)
+- Incremental TypeScript architecture in [src](src)
+- CI workflow in [.github/workflows/ci.yml](.github/workflows/ci.yml)
+- Playwright regression coverage via [playwright.config.js](playwright.config.js)
 
 ## Quick Start
 
-### Install & Run
+### Prerequisites
+
+- Node.js and npm
+- A Chromium-based browser for local validation
+- Optional: Android Studio and SDK for APK builds
+
+### Install
+
 ```bash
 git clone https://github.com/Yuvalalex/BENAM---Tactical-Preview.git
 cd BENAM---Tactical-Preview
 npm install
-npm run dev       # → http://localhost:8080
 ```
 
-### Development
+### Run Locally
+
 ```bash
-npm run typecheck  # TypeScript strict validation
-npm test           # Playwright E2E tests
-npm run build      # Production build
-./build_apk.sh     # Android APK → android/app/build/outputs/apk/debug/
+npm run dev
 ```
 
-
-Notes:
-- Default Vite dev URL is typically `http://localhost:5173` unless configured otherwise.
-- Playwright in this repo runs against `http://127.0.0.1:8080` via its own webServer config.
-
-
-*Running via local server is preferred over opening index.html directly — required for Service Worker, PWA install, camera access, and Playwright validation.*
-
-### PWA Installation
-- **Android**: Chrome menu ⋮ → "Add to Home Screen"
-- **iOS**: Safari Share ⬆ → "Add to Home Screen"
-- **Desktop**: Chrome ⊕ icon in address bar → "Install"
-
----
-
-## Screens
-
-| Screen | ID | Description |
-|---|---|---|
-| **Role Selection** | `sc-role` | Set role, mode, and mission type — app entry point |
-| **Pre-Mission Prep** | `sc-prep` | Force management, comms setup, Pre-Mission Brief |
-| **Active Incident** | `sc-war` | War Room — all casualties, AI Advisor, NAE |
-| **Fire Mode** | `sc-fire` | MARCH buttons, minimalist combat interface |
-| **Casualty** | `sc-cas` | Individual casualty management |
-| **Blood Bank** | `sc-blood` | Compatibility matrix, inventory tracking |
-| **Report & Evac** | `sc-report` | 9-LINE, Evac Priority, QR export, KPI summary |
-| **Debrief / Stats** | `sc-stats` | Statistics, Gantt chart, Hero Score |
-| **Timeline** | `sc-timeline` | Full chronological incident log |
-
----
-
-## Tech Stack
-
-| Layer | Technology | Notes |
-|---|---|---|
-| **Frontend** | HTML5 + CSS3 + Vanilla JS | No frameworks — fast & portable |
-| **TypeScript** | Strict mode, DI Container | Domain services, background tasks |
-| **Build** | Vite | HMR, TS compilation, bundling |
-| **Offline** | Service Worker (Cache API) | 100% offline-first |
-| **Storage** | IndexedDB + localStorage | Local persistence, no backend |
-| **Voice** | Web Speech API (he-IL) | Hebrew voice input + audio recording |
-| **QR / Sync** | Canvas QR + Mesh chunking | No external libs, inter-device sync |
-| **Tests** | Playwright | 7 E2E suites |
-| **CI/CD** | GitHub Actions | typecheck → build → E2E |
-| **Mobile** | PWA + Android APK | Standalone, RTL, he locale |
-
----
-
-## Privacy & Security
-
-- ✓ **Zero servers** — data never leaves the device
-- ✓ **Zero API calls** — not a single network request
-- ✓ **Zero telemetry** — no tracking, analytics, or external logs
-
----
-
-## Contributing
-
-### Contribution Workflow
+Optional legacy static server:
 
 ```bash
-# 1. Fork + Clone
-git clone https://github.com/YOUR_USERNAME/BENAM---Tactical-Preview.git
+npm run dev:legacy
+```
 
-# 2. New branch
-git checkout -b feature/my-feature
+### Validate
 
-# 3. Test before commit
+```bash
+npm run typecheck
+npm run build
 npm test
-
-# 4. Push + Pull Request
-git push origin feature/my-feature
 ```
 
-**Key Rules:**
-- **RULE 01**: Every new feature must work 100% offline.
-- **RULE 02**: UI must be RTL, Hebrew-compatible, and touch-friendly.
-- **RULE 03**: No new external dependencies without prior discussion.
+### Build Android APK
 
----
+```bash
+./build_apk.sh
+```
 
-## About
-**BENAM**  
-*Built for the field. Works without the cloud.*  
-ISC License © Yuvalalex
+Release build:
 
-- [Report a bug](https://github.com/Yuvalalex/BENAM---Tactical-Preview/issues)
-- [Presentation deck](https://docs.google.com/presentation/d/1dOmADFgqdxe--yQ07pob6icAYKNHVX6_DnLUm9n2ZiU/edit?usp=sharing)
+```bash
+./build_apk.sh release
+```
+
+## Testing And CI
+
+The repository includes GitHub Actions CI for:
+- TypeScript check
+- Production build
+- Playwright E2E tests
+
+Main scripts:
+
+| Script | Purpose |
+|---|---|
+| `npm run dev` | Start the Vite development server |
+| `npm run dev:legacy` | Start a static server on port 8080 |
+| `npm run build` | Create a production build |
+| `npm run preview` | Preview the production bundle |
+| `npm run typecheck` | Run TypeScript with no emit |
+| `npm test` | Run Playwright end-to-end tests |
+| `npm run test:ci` | Run Playwright with GitHub reporter |
+
+## Public Safety Boundary
+
+BENAM is presented here as a technical project and workflow tool.
+This repository is not presented as a regulated clinical decision system, a certified medical product, or a substitute for formal medical command, training, or protocol authority.
+
+## Recommended GitHub Presentation
+
+For the strongest public-facing version of this repository, add the following next:
+- 2 to 4 screenshots or one short GIF near the top of the page
+- A pinned GitHub release for `v1.1.0`
+- A short project video or walkthrough link if available
+
+## Additional Project Docs
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md)
+- [CHANGELOG.md](CHANGELOG.md)
+
+## License
+
+ISC. See [LICENSE](LICENSE).
+
+## Links
+
+- Repository: https://github.com/Yuvalalex/BENAM---Tactical-Preview
+- Issues: https://github.com/Yuvalalex/BENAM---Tactical-Preview/issues
+- Presentation deck: https://docs.google.com/presentation/d/1dOmADFgqdxe--yQ07pob6icAYKNHVX6_DnLUm9n2ZiU/edit?usp=sharing

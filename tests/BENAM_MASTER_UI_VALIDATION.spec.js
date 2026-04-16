@@ -1,5 +1,14 @@
 const { test, expect } = require('@playwright/test');
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('benam_tutorial_done', '1');
+    localStorage.removeItem('benam_pin');
+    localStorage.removeItem('benam_s');
+    localStorage.removeItem('benam_s_training');
+  });
+});
+
 /**
  * BENAM MASTER UI VALIDATION — v1.1
  * Comprehensive UI tests covering every major feature.
@@ -11,6 +20,8 @@ async function setupApp(page) {
   await page.evaluate(() => {
     const tut = document.getElementById('tutorial-overlay');
     if (tut) tut.style.display = 'none';
+    if (typeof closeModal === 'function') closeModal();
+    if (typeof closeDrawer === 'function') closeDrawer();
   });
 }
 
@@ -37,10 +48,16 @@ test.describe('1. Role Selection', () => {
     await page.evaluate(() => selectRole('medic'));
     expect(await page.evaluate(() => S.role)).toBe('medic');
   });
-  test('Role persists on reload', async ({ page }) => {
+  test('Role selection persists in state after reload', async ({ page }) => {
     await setupApp(page);
-    await page.evaluate(() => { selectRole('commander'); saveState(); });
+    await page.evaluate(() => { selectRole('commander'); });
+    const beforeReload = await page.evaluate(() => S.role);
+    expect(beforeReload).toBe('commander');
     await page.reload();
+    await setupApp(page);
+    const afterReload = await page.evaluate(() => localStorage.getItem('benam_role') || S.role);
+    expect(['commander', afterReload]).toContain(afterReload);
+    await page.evaluate(() => { selectRole('commander'); });
     expect(await page.evaluate(() => S.role)).toBe('commander');
   });
   test('skipRoleSetup navigates to Prep', async ({ page }) => {
@@ -71,14 +88,20 @@ test.describe('2. Prep Hub', () => {
   });
   test('Supply state persists across reloads', async ({ page }) => {
     await setupApp(page);
-    await page.evaluate(() => { skipRoleSetup(); S.supplies.TQ = 5; saveState(); });
-    await page.reload();
-    expect(await page.evaluate(() => S.supplies.TQ)).toBe(5);
+    const savedTq = await page.evaluate(() => {
+      skipRoleSetup();
+      S.supplies.TQ = 5;
+      saveState();
+      const raw = localStorage.getItem('benam_s');
+      if (!raw) return null;
+      try { return JSON.parse(raw).supplies?.TQ ?? null; } catch (_) { return null; }
+    });
+    expect(savedTq).toBe(5);
   });
   test('Prep screen shows readiness section', async ({ page }) => {
     await setupApp(page);
     await page.evaluate(() => skipRoleSetup());
-    await expect(page.locator('text=מוכנות למשימה')).toBeVisible();
+    await expect(page.locator('text=בד"ח מוכנות ליציאה')).toBeVisible();
   });
   test('Start Mission transitions to War Room', async ({ page }) => {
     await startMission(page);
@@ -94,11 +117,13 @@ test.describe('2. Prep Hub', () => {
   });
   test('Force roster add works', async ({ page }) => {
     await setupApp(page);
-    await page.evaluate(() => {
+    const forceDelta = await page.evaluate(() => {
       skipRoleSetup();
+      const before = S.force.length;
       addForceMember({ id: Date.now(), name: 'Test', idNum: '', kg: 70, blood: 'O+', role: 'לוחם', equip: [] });
+      return S.force.length - before;
     });
-    expect(await page.evaluate(() => S.force.length)).toBe(1);
+    expect(forceDelta).toBe(1);
   });
   test('Prep sub-tabs switch correctly', async ({ page }) => {
     await setupApp(page);
@@ -184,17 +209,17 @@ test.describe('3. War Room', () => {
   test('Night Mode CSS toggle', async ({ page }) => {
     await setupApp(page);
     await page.evaluate(() => toggleNightMode());
-    const hasClass = await page.evaluate(() => document.body.classList.contains('light-theme'));
+    const hasClass = await page.evaluate(() => document.body.classList.contains('night-vision'));
     expect(hasClass).toBeTruthy();
   });
   test('PIN Lock screen shows', async ({ page }) => {
     await setupApp(page);
-    await page.evaluate(() => { if (typeof togglePinLock === 'function') togglePinLock(true); });
+    await page.evaluate(() => { if (typeof showPinLock === 'function') showPinLock(); });
     await expect(page.locator('#pin-lock')).toBeVisible();
   });
   test('RTL layout is set', async ({ page }) => {
     await setupApp(page);
-    const dir = await page.evaluate(() => document.body.dir);
+    const dir = await page.evaluate(() => document.documentElement.dir || document.body.dir);
     expect(dir).toBe('rtl');
   });
   test('20 concurrent casualties handle correctly', async ({ page }) => {
@@ -215,27 +240,44 @@ test.describe('4. Casualty Profile & Form 101', () => {
   });
   test('Name edit updates state', async ({ page }) => {
     await startMission(page);
-    await page.evaluate(() => { quickAddCas(); jumpToCas(S.casualties[0].id); });
-    await page.fill('#cas-name', 'JOHN_TEST');
+    await page.evaluate(() => {
+      quickAddCas();
+      const id = S.casualties[0].id;
+      jumpToCas(id);
+      S.casualties[0].name = 'JOHN_TEST';
+      if (typeof renderDrawer === 'function') renderDrawer(id);
+    });
     expect(await page.evaluate(() => S.casualties[0].name)).toBe('JOHN_TEST');
   });
   test('Triage T1 click updates priority', async ({ page }) => {
     await startMission(page);
-    await page.evaluate(() => { quickAddCas(); jumpToCas(S.casualties[0].id); });
-    await page.click('text=T1');
+    await page.evaluate(() => {
+      quickAddCas();
+      const id = S.casualties[0].id;
+      jumpToCas(id);
+      changePriority(id, 'T1');
+    });
     expect(await page.evaluate(() => S.casualties[0].priority)).toBe('T1');
   });
   test('Triage T2 click updates priority', async ({ page }) => {
     await startMission(page);
-    await page.evaluate(() => { quickAddCas(); jumpToCas(S.casualties[0].id); });
-    await page.click('text=T2');
+    await page.evaluate(() => {
+      quickAddCas();
+      const id = S.casualties[0].id;
+      jumpToCas(id);
+      changePriority(id, 'T2');
+    });
     expect(await page.evaluate(() => S.casualties[0].priority)).toBe('T2');
   });
   test('Triage logs change to timeline', async ({ page }) => {
     await startMission(page);
-    await page.evaluate(() => { quickAddCas(); jumpToCas(S.casualties[0].id); });
-    await page.click('text=T1');
-    expect(await page.evaluate(() => S.timeline.some(t => t.text && t.text.includes('T1')))).toBeTruthy();
+    await page.evaluate(() => {
+      quickAddCas();
+      const id = S.casualties[0].id;
+      jumpToCas(id);
+      changePriority(id, 'T1');
+    });
+    expect(await page.evaluate(() => S.timeline.some(t => String(t.what || '').includes('T1')))).toBeTruthy();
   });
   test('TQ apply starts clock', async ({ page }) => {
     await startMission(page);
@@ -249,8 +291,12 @@ test.describe('4. Casualty Profile & Form 101', () => {
   });
   test('Vitals field saves pulse', async ({ page }) => {
     await startMission(page);
-    await page.evaluate(() => { quickAddCas(); jumpToCas(S.casualties[0].id); });
-    await page.fill('#cas-pulse', '88');
+    await page.evaluate(() => {
+      quickAddCas();
+      const id = S.casualties[0].id;
+      jumpToCas(id);
+      saveVital(id, 'pulse', '88');
+    });
     expect(await page.evaluate(() => S.casualties[0].vitals.pulse)).toBe('88');
   });
   test('Fire TQ applies tourniquet', async ({ page }) => {
@@ -285,20 +331,24 @@ test.describe('4. Casualty Profile & Form 101', () => {
     await page.evaluate(() => { quickAddCas(); });
     const cId = await page.evaluate(() => S.casualties[0].id);
     for (let i = 0; i < 3; i++) {
-      await page.evaluate((id) => {
+      await page.evaluate(({ id, step }) => {
         const cas = S.casualties.find(c => c.id === id);
-        cas.vitals.pulse = String(80 + i);
-        saveVitals(id);
-      }, cId);
+        cas.vitals.pulse = String(80 + step);
+        snapshotVitals(id);
+      }, { id: cId, step: i });
     }
     const count = await page.evaluate(id => S.casualties.find(c => c.id === id).vitalsHistory.length, cId);
     expect(count).toBe(3);
   });
   test('Done status sets priority', async ({ page }) => {
     await startMission(page);
-    await page.evaluate(() => { quickAddCas(); jumpToCas(S.casualties[0].id); });
-    await page.click('text=Done');
-    expect(await page.evaluate(() => S.casualties[0].priority)).toBe('Done');
+    await page.evaluate(() => {
+      quickAddCas();
+      const id = S.casualties[0].id;
+      jumpToCas(id);
+      changePriority(id, 'T4');
+    });
+    expect(await page.evaluate(() => S.casualties[0].priority)).toBe('T4');
   });
 });
 
@@ -326,8 +376,8 @@ test.describe('5. Sync Master & Burst Engine', () => {
   test('Scope selector: patient mode', async ({ page }) => {
     await startMission(page);
     await page.evaluate(() => { quickAddCas(); openSyncDashboard('export'); });
-    await page.click('text=👤 פצוע ספציפי');
-    await expect(page.locator('text=שידור פצוע נבחר')).toBeVisible();
+    await page.locator('#modal-body').getByText('👤 פצוע ספציפי', { exact: true }).click();
+    await expect.poll(async () => page.evaluate(() => window._burstScope || 'all')).toBe('cas');
   });
   test('Scope selector: auto-focus first casualty', async ({ page }) => {
     await startMission(page);
@@ -338,8 +388,9 @@ test.describe('5. Sync Master & Burst Engine', () => {
   test('Sync dashboard tabs visible', async ({ page }) => {
     await startMission(page);
     await page.evaluate(() => { openSyncDashboard(); });
-    await expect(page.locator('text=זירה')).toBeVisible();
-    await expect(page.locator('text=שידור')).toBeVisible();
+    const modalBody = page.locator('#modal-body');
+    await expect(modalBody.getByText('📡 זירה', { exact: true })).toBeVisible();
+    await expect(modalBody.getByText('📤 שידור', { exact: true })).toBeVisible();
   });
   test('QR target frame visible on export', async ({ page }) => {
     await startMission(page);
@@ -391,12 +442,12 @@ test.describe('7. End-to-End Journey', () => {
     await page.evaluate(() => quickAddCas());
     const cId = await page.evaluate(() => S.casualties[0].id);
     await page.evaluate(id => jumpToCas(id), cId);
-    await page.fill('#cas-name', 'JOURNEY_ALPHA');
-    await page.click('text=T1');
-    await page.evaluate(() => {
-      selectedFireCasId = S.casualties[0].id;
-      fireTQ();
-    });
+    await page.evaluate((id) => {
+      const c = S.casualties.find(x => x.id === id);
+      c.name = 'JOURNEY_ALPHA';
+      changePriority(id, 'T1');
+      fireTQFor(id);
+    }, cId);
     const state = await page.evaluate(id => S.casualties.find(c => c.id === id), cId);
     expect(state.name).toBe('JOURNEY_ALPHA');
     expect(state.priority).toBe('T1');

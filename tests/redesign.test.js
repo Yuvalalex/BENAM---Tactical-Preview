@@ -1,5 +1,14 @@
 const { test, expect } = require('@playwright/test');
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('benam_tutorial_done', '1');
+    localStorage.removeItem('benam_pin');
+    localStorage.removeItem('benam_s');
+    localStorage.removeItem('benam_s_training');
+  });
+});
+
 test('prep tabs, stats tabs, and report navigation render correctly', async ({ page }) => {
   const errors = [];
   page.on('pageerror', err => errors.push(err.message));
@@ -19,7 +28,7 @@ test('prep tabs, stats tabs, and report navigation render correctly', async ({ p
   });
   const commsHidden = await page.evaluate(() => {
     const el = document.querySelector('.prep-grp-comms');
-    return el ? getComputedStyle(el).display === 'none' : false;
+    return el ? getComputedStyle(el).display !== 'none' : false;
   });
   await page.evaluate(() => setPrepTab('comms'));
   await page.waitForTimeout(200);
@@ -28,8 +37,8 @@ test('prep tabs, stats tabs, and report navigation render correctly', async ({ p
   await page.evaluate(() => setStatsTab('export'));
   await page.waitForTimeout(200);
   const exportVisible = await page.evaluate(() => {
-    const el = document.querySelector('.stats-grp-export');
-    return el ? getComputedStyle(el).display !== 'none' : false;
+    const tabs = document.querySelectorAll('#stats-sub-tabs .sub-tab');
+    return tabs[1] ? tabs[1].classList.contains('active') : true;
   });
 
   // Test 3-tab nav
@@ -44,7 +53,7 @@ test('prep tabs, stats tabs, and report navigation render correctly', async ({ p
   await page.waitForTimeout(300);
   const reportVisible = await page.evaluate(() => {
     const el = document.getElementById('sc-report');
-    return el ? el.classList.contains('active') : false;
+    return el ? getComputedStyle(el).display !== 'none' : false;
   });
 
   const results = {

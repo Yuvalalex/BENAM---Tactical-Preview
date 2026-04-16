@@ -2,7 +2,6 @@
   "name": "benam",
   "version": "1.1.0",
   "description": "Offline-first tactical medical incident management PWA for combat medic teams — MARCH protocol, real-time triage, QR mesh sync, AI advisor, and Android APK via Capacitor",
-  "main": "index.js",
   "scripts": {
     "dev": "vite --host",
     "dev:legacy": "python3 -m http.server 8080",
@@ -15,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Yuvalalex/BENAM_1.2.git"
+    "url": "git+https://github.com/Yuvalalex/BENAM---Tactical-Preview.git"
   },
   "keywords": [
     "pwa",
@@ -36,9 +35,9 @@
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/Yuvalalex/BENAM_1.0/issues"
+    "url": "https://github.com/Yuvalalex/BENAM---Tactical-Preview/issues"
   },
-  "homepage": "https://github.com/Yuvalalex/BENAM_1.0#readme",
+  "homepage": "https://github.com/Yuvalalex/BENAM---Tactical-Preview#readme",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "typescript": "^5.9.3",

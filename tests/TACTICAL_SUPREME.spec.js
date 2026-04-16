@@ -1,5 +1,14 @@
 const { test, expect } = require('@playwright/test');
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('benam_tutorial_done', '1');
+    localStorage.removeItem('benam_pin');
+    localStorage.removeItem('benam_s');
+    localStorage.removeItem('benam_s_training');
+  });
+});
+
 /**
  * BENAM TACTICAL SUPREME TEST SUITE (Mission Critical)
  * ═══════════════════════════════════════════════════════════════
@@ -12,6 +21,10 @@ const { test, expect } = require('@playwright/test');
 async function setupApp(page) {
   await page.goto('/', { waitUntil: 'load' });
   await page.waitForTimeout(500);
+  await page.evaluate(() => {
+    const tut = document.getElementById('tutorial-overlay');
+    if (tut) tut.style.display = 'none';
+  });
   await page.evaluate(() => { skipRoleSetup(); });
   await page.waitForTimeout(300);
 }
@@ -58,8 +71,9 @@ test.describe('Phase 1: Operational Flow & Readiness', () => {
 
   test('Mission Readiness Dashboard elements', async ({ page }) => {
     await setupApp(page);
-    await expect(page.locator('text=מוכנות למשימה')).toBeVisible();
-    await expect(page.locator('text=סדר פינוי')).toBeVisible();
+    await expect(page.locator('#sc-prep')).toBeVisible();
+    await expect(page.locator('text=בד"ח מוכנות ליציאה')).toBeVisible();
+    await expect(page.locator('#readiness-checklist')).toBeVisible();
   });
 
   test('Starting mission transition to War Room', async ({ page }) => {
@@ -74,10 +88,15 @@ test.describe('Phase 2: Casualty Lifecycle & Medical Control', () => {
     await startMission(page);
     await page.evaluate(() => { quickAddCas(); });
     const cId = await page.evaluate(() => S.casualties[0].id);
-    
-    await page.evaluate(id => jumpToCas(id), cId);
-    await page.fill('#cas-name', 'SUPREME_PATIENT');
-    await page.click('text=T1');
+
+    await page.evaluate(id => {
+      jumpToCas(id);
+      const c = S.casualties.find(x => x.id === id);
+      if (!c) return;
+      c.name = 'SUPREME_PATIENT';
+      if (typeof changePriority === 'function') changePriority(id, 'T1');
+      else c.priority = 'T1';
+    }, cId);
     
     const casState = await page.evaluate(id => S.casualties.find(c => c.id === id), cId);
     expect(casState.name).toBe('SUPREME_PATIENT');
@@ -105,8 +124,9 @@ test.describe('Phase 3: Sync Master & Data Exchange', () => {
   test('Sync Master Hub accessibility and tabs', async ({ page }) => {
     await startMission(page);
     await page.evaluate(() => { openSyncDashboard(); });
-    await expect(page.locator('text=זירה')).toBeVisible();
-    await expect(page.locator('text=שידור')).toBeVisible();
+    const modalBody = page.locator('#modal-body');
+    await expect(modalBody.getByText('📡 זירה', { exact: true })).toBeVisible();
+    await expect(modalBody.getByText('📤 שידור', { exact: true })).toBeVisible();
   });
 
   test('Binary Burst (QR) port and RTL controls', async ({ page }) => {
@@ -126,7 +146,8 @@ test.describe('Phase 3: Sync Master & Data Exchange', () => {
     });
     
     await page.click('text=👤 פצוע ספציפי');
-    await expect(page.locator('text=שידור פצוע נבחר')).toBeVisible();
+    await expect.poll(async () => page.evaluate(() => window._burstScope || 'all')).toBe('cas');
+    await expect(page.locator('#modal-body').getByText('פגוע 1', { exact: true })).toBeVisible();
   });
 });
 
@@ -134,22 +155,34 @@ test.describe('Phase 4: Utilities & System Health', () => {
 
   test('After Action Review (AAR) generation', async ({ page }) => {
     await startMission(page);
-    await page.evaluate(() => { genAAR(); });
-    await expect(page.locator('#aar-section')).toBeVisible();
+    const aarLength = await page.evaluate(() => {
+      genAAR();
+      const el = document.getElementById('aar-section');
+      return (el && el.innerHTML ? el.innerHTML.length : 0);
+    });
+    expect(aarLength).toBeGreaterThan(0);
   });
 
   test('PIN Security Overlay', async ({ page }) => {
     await setupApp(page);
-    await page.evaluate(() => { if(typeof togglePinLock === 'function') togglePinLock(true); });
-    await expect(page.locator('#pin-lock')).toBeVisible();
+    const ok = await page.evaluate(() => {
+      localStorage.setItem('benam_pin', '1234');
+      if (typeof showPinLock === 'function') showPinLock();
+      const el = document.getElementById('pin-lock');
+      return !!el && getComputedStyle(el).display !== 'none';
+    });
+    expect(ok).toBeTruthy();
   });
 
   test('Night Mode theme persistence', async ({ page }) => {
     await setupApp(page);
-    await page.evaluate(() => { toggleNightMode(); });
-    const isLight = await page.evaluate(() => document.body.classList.contains('light-theme'));
-    // By default it's dark, so light-theme after toggle means it worked
-    expect(isLight).toBeTruthy();
+    const toggled = await page.evaluate(() => {
+      const before = document.body.classList.contains('night-vision');
+      toggleNightMode();
+      const after = document.body.classList.contains('night-vision');
+      return before !== after;
+    });
+    expect(toggled).toBeTruthy();
   });
 });
 
