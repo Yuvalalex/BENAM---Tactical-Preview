@@ -20,6 +20,11 @@ BENAM is a local-first field operations web app for handling mission setup, casu
 </div>
 
 ---
+## Overview
+
+BENAM is a single-repository application for field incident management. It covers the operational flow from setup and readiness, through active casualty handling and prioritization, to report generation and offline transfer.
+
+From an engineering perspective, the value of this repository is not just the feature list. It shows how a state-heavy browser application can support offline operation, structured workflow handling, mobile packaging, regression coverage, and a gradual migration from legacy JavaScript to stricter TypeScript modules.
 
 ## Why This Repo Is Worth Reviewing
 
@@ -28,12 +33,6 @@ BENAM is a local-first field operations web app for handling mission setup, casu
 - Hybrid legacy JavaScript plus modular TypeScript migration in a real working product
 - Android packaging support through Capacitor
 - RTL/Hebrew interface with touch-oriented field UX
-
-## Overview
-
-BENAM is a single-repository application for field incident management. It covers the operational flow from setup and readiness, through active casualty handling and prioritization, to report generation and offline transfer.
-
-From an engineering perspective, the value of this repository is not just the feature list. It shows how a state-heavy browser application can support offline operation, structured workflow handling, mobile packaging, regression coverage, and a gradual migration from legacy JavaScript to stricter TypeScript modules.
 
 ## What This Repository Demonstrates
 
