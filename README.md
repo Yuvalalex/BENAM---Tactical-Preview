@@ -54,7 +54,7 @@ From an engineering perspective, the value of this repository is not just the fe
 
 ## Core Product Flow
 
-1. PIN lock and app entry
+1. Lock Screen and app entry
 2. Role and mission setup
 3. Pre-mission preparation
 4. WAR mode casualty operations
